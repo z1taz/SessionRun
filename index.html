@@ -54,7 +54,7 @@
   .panel li{font-family:var(--display);font-weight:500;font-size:clamp(12.5px,1.6vmin,16px);color:var(--muted);line-height:1.45;padding-left:16px;position:relative;}
   .panel li::before{content:'';position:absolute;left:0;top:0.62em;width:5px;height:5px;border-radius:50%;background:var(--h3);}
   .panel li strong{color:var(--text);font-weight:600;}
-  .panel a{color:var(--h2);}
+  .panel a{color:var(--h2);position:relative;z-index:10;pointer-events:auto;cursor:pointer;}
   .panel .metrics{display:flex;gap:26px;flex-wrap:wrap;}
   .panel .metric .n{font-family:var(--display);font-size:clamp(22px,3.4vmin,38px);font-weight:700;color:var(--h4);line-height:1;}
   .panel .metric .l{font-size:10px;color:var(--faint);margin-top:6px;letter-spacing:0.05em;}
@@ -131,8 +131,8 @@
     {key:'bottom',num:'06',nav:'contact',tag:'Say hello.',step:'Contact',
      h:'Get in touch.',
      items:['ziyasoudagar03@gmail.com',
-            '<a href="https://github.com/z1taz">github.com/z1taz</a>',
-            '<a href="https://www.linkedin.com/in/ziya-s-846562320">linkedin.com/in/ziya-s-846562320</a>']}
+            '<a href="https://github.com/z1taz" target="_blank" rel="noopener">github.com/z1taz</a>',
+            '<a href="https://www.linkedin.com/in/ziya-s-846562320" target="_blank" rel="noopener">linkedin.com/in/ziya-s-846562320</a>']}
   ];
 
   const STATES={front:{rx:0,ry:0},right:{rx:0,ry:-90},back:{rx:0,ry:-180},left:{rx:0,ry:90},top:{rx:-90,ry:0},bottom:{rx:90,ry:0}};
@@ -204,17 +204,38 @@
     if(moved<7){const k=nearestFace();if(openFace===k)closeCover();else{closeCover();openAt(k);}}}
 
   if(window.PointerEvent){
-    scene.addEventListener('pointerdown',e=>{scene.setPointerCapture(e.pointerId);down(e.clientX,e.clientY);});
+    scene.addEventListener('pointerdown',e=>{
+      if(e.target.closest('a')) return;
+      scene.setPointerCapture(e.pointerId);
+      down(e.clientX,e.clientY);
+    });
     scene.addEventListener('pointermove',e=>move(e.clientX,e.clientY));
-    scene.addEventListener('pointerup',up);
+    scene.addEventListener('pointerup',e=>{
+      if(e.target.closest('a')) return;
+      up();
+    });
     scene.addEventListener('pointercancel',up);
   } else {
-    scene.addEventListener('mousedown',e=>{e.preventDefault();down(e.clientX,e.clientY);});
+    scene.addEventListener('mousedown',e=>{
+      if(e.target.closest('a')) return;
+      e.preventDefault();
+      down(e.clientX,e.clientY);
+    });
     window.addEventListener('mousemove',e=>move(e.clientX,e.clientY));
-    window.addEventListener('mouseup',up);
-    scene.addEventListener('touchstart',e=>{const t=e.touches[0];down(t.clientX,t.clientY);},{passive:true});
+    window.addEventListener('mouseup',e=>{
+      if(e.target.closest('a')) return;
+      up();
+    });
+    scene.addEventListener('touchstart',e=>{
+      if(e.target.closest('a')) return;
+      const t=e.touches[0];
+      down(t.clientX,t.clientY);
+    },{passive:true});
     scene.addEventListener('touchmove',e=>{const t=e.touches[0];move(t.clientX,t.clientY);},{passive:true});
-    scene.addEventListener('touchend',up);
+    scene.addEventListener('touchend',e=>{
+      if(e.target.closest('a')) return;
+      up();
+    });
   }
 
   dotsWrap.addEventListener('click',e=>{const b=e.target.closest('.dot');if(!b)return;
