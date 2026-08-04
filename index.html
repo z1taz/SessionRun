@@ -1,14 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Session Run — Shared View of Agent Run</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  </head>
-  <body style="margin: 0; padding: 0; background: #0C0D12; color: #ECEEF3;">
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ziya M Soudagar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#07060F;
+    --glass:rgba(24,17,54,0.88);
+    --edge:rgba(140,120,255,0.26);
+    --h1:#2B3BD6;--h2:#00CFE8;--h3:#FFB020;--h4:#FF3D6E;
+    --text:#EFEBFF;--muted:#9A93C4;--faint:#5D5688;
+    --display:'Space Grotesk',sans-serif;--mono:'IBM Plex Mono',monospace;
+    --size:min(62vmin,660px);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--void);}
+  body{font-family:var(--mono);color:var(--text);width:100vw;height:100vh;position:relative;-webkit-font-smoothing:antialiased;}
+  .aura{position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(42vmax 42vmax at 28% 24%,rgba(43,59,214,0.30),transparent 64%),
+               radial-gradient(38vmax 38vmax at 74% 74%,rgba(255,61,110,0.17),transparent 64%);}
+
+  .corner{position:fixed;z-index:6;}
+  .corner.tl{top:28px;left:32px;}
+  .corner.tr{top:28px;right:32px;text-align:right;}
+  .corner.bl{bottom:28px;left:32px;}
+  .kicker{font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--h2);margin-bottom:7px;}
+  .name{font-family:var(--display);font-size:17px;font-weight:600;color:#fff;}
+  .role-tag{font-size:11px;color:var(--muted);}
+  .hint-line{font-size:11px;color:var(--faint);}
+  .hint-line b{color:var(--muted);font-weight:400;}
+
+  .stage{position:relative;z-index:3;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;}
+  .scene{perspective:calc(var(--size)*3);width:var(--size);height:var(--size);display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;user-select:none;}
+  .scene.dragging{cursor:grabbing;}
+  .cube{position:relative;width:var(--size);height:var(--size);transform-style:preserve-3d;will-change:transform;}
+  .face{position:absolute;width:var(--size);height:var(--size);transform-style:preserve-3d;}
+  .face.front {transform:translateZ(calc(var(--size)/2));}
+  .face.right {transform:rotateY(90deg)   translateZ(calc(var(--size)/2));}
+  .face.back  {transform:rotateY(180deg)  translateZ(calc(var(--size)/2));}
+  .face.left  {transform:rotateY(-90deg)  translateZ(calc(var(--size)/2));}
+  .face.top   {transform:rotateX(90deg)   translateZ(calc(var(--size)/2));}
+  .face.bottom{transform:rotateX(-90deg)  translateZ(calc(var(--size)/2));}
+
+  .cover,.panel{position:absolute;inset:0;border-radius:18px;overflow:hidden;}
+  .panel{background:linear-gradient(155deg,#16103A,#0C0922 70%);box-shadow:inset 0 0 0 1px var(--edge);
+    padding:min(5.6vmin,50px);display:flex;flex-direction:column;justify-content:center;gap:18px;}
+  .panel .step{font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--h2);}
+  .panel h2{font-family:var(--display);font-size:clamp(18px,2.7vmin,29px);font-weight:700;margin:0;color:#fff;letter-spacing:-0.015em;line-height:1.2;}
+  .panel ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;}
+  .panel li{font-family:var(--display);font-weight:500;font-size:clamp(12.5px,1.6vmin,16px);color:var(--muted);line-height:1.45;padding-left:16px;position:relative;}
+  .panel li::before{content:'';position:absolute;left:0;top:0.62em;width:5px;height:5px;border-radius:50%;background:var(--h3);}
+  .panel li strong{color:var(--text);font-weight:600;}
+  .panel a{color:var(--h2);}
+  .panel .metrics{display:flex;gap:26px;flex-wrap:wrap;}
+  .panel .metric .n{font-family:var(--display);font-size:clamp(22px,3.4vmin,38px);font-weight:700;color:var(--h4);line-height:1;}
+  .panel .metric .l{font-size:10px;color:var(--faint);margin-top:6px;letter-spacing:0.05em;}
+
+  .cover{background:var(--glass);box-shadow:inset 0 0 0 1px var(--edge),0 18px 60px rgba(0,0,0,0.6);
+    transform-origin:left center;transform:rotateY(0deg);
+    transition:transform 620ms cubic-bezier(.34,.9,.28,1);backface-visibility:hidden;cursor:pointer;}
+  .cover.open{transform:rotateY(-118deg);}
+
+  .heat{position:absolute;inset:0;display:grid;gap:3px;padding:min(3.6vmin,28px);}
+  .cell{border-radius:2px;animation:breathe 4.5s ease-in-out infinite;}
+  @keyframes breathe{0%,100%{opacity:var(--o);}50%{opacity:calc(var(--o)*0.4);}}
+
+  .cover-ui{position:absolute;inset:0;padding:min(5.6vmin,50px);display:flex;flex-direction:column;justify-content:space-between;
+    background:linear-gradient(180deg,rgba(9,7,24,0.48),rgba(9,7,24,0.9));}
+  .cover-ui .num{font-size:11px;color:var(--h3);letter-spacing:0.16em;}
+  .cover-ui .tag{font-family:var(--display);font-weight:700;font-size:clamp(21px,3.2vmin,36px);color:#fff;letter-spacing:-0.015em;margin-top:10px;line-height:1.12;}
+  .cover-ui .open-hint{font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--h2);}
+
+  .dots{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:6;display:flex;gap:6px;
+    background:rgba(10,8,26,0.85);padding:7px;border-radius:26px;border:1px solid var(--edge);}
+  .dot{font-family:var(--mono);font-size:11px;color:var(--faint);background:transparent;border:1px solid transparent;
+    padding:6px 13px;border-radius:20px;cursor:pointer;transition:color 160ms,background 160ms;}
+  .dot:hover{color:var(--text);}
+  .dot.active{color:#fff;background:rgba(43,59,214,0.34);border-color:var(--h2);}
+
+  @media (prefers-reduced-motion:reduce){.cell{animation:none;}.cover{transition:none;}}
+  @media (max-width:700px){:root{--size:min(84vmin,430px);}.corner.tr{display:none;}}
+</style>
+</head>
+<body>
+  <div class="aura"></div>
+  <div class="corner tl"><div class="kicker">Product &amp; design engineer</div><div class="name">Ziya M Soudagar</div></div>
+  <div class="corner tr"><div class="role-tag">Founding Design Engineer — application</div></div>
+  <div class="corner bl"><div class="hint-line"><b>drag</b> to spin · <b>click</b> a face to open</div></div>
+  <div class="stage"><div class="scene" id="scene"><div class="cube" id="cube"></div></div></div>
+  <div class="dots" id="dots"></div>
+
+<script>
+(function(){
+  const FACES=[
+    {key:'front',nav:'start',num:'01',tag:'I kill manual work.',step:'Ziya M Soudagar',
+     h:'Find the person doing it by hand. Build the thing that stops them.',
+     items:['Every tool I have shipped came from watching someone repeat themselves.',
+            '70%, 80%, 100% of the manual checking &mdash; gone, across four builds.',
+            'I care what happens when it is slow, empty, or wrong.']},
+
+    {key:'right',num:'02',nav:'session',tag:'Session.',step:'Live prototype &mdash; React',
+     h:'Watching an agent work, without losing control of it.',
+     items:['Steps stream live. The run <strong>stops itself</strong> before anything other people would see.',
+            'Approve or decline it. Teammates appear mid-run. Full keyboard flow.',
+            '<a href="session.html">Open the prototype &rarr;</a>']},
+
+    {key:'back',num:'03',nav:'the work',tag:'225 live signals.',step:'The work',
+     h:'Real-time data, made trustworthy.',
+     items:['A clinical prototype streaming <strong>225 channels</strong> continuously into a live dashboard.',
+            'Used with children with cerebral palsy in a hospital.',
+            'Bad readings look identical to real ones. I built the validation that caught them before the screen did.'],
+     metrics:[['225','channels'],['100%','data stability'],['~70%','less manual checking']]},
+
+    {key:'left',num:'04',nav:'built solo',tag:'Dense data, made readable.',step:'Built solo',
+     h:'Two tools, end to end.',
+     items:['<strong>Log Visualizer</strong> &mdash; turns long machine-generated reports into interactive dashboards, scoring each 0&ndash;100 so the worst surfaces first.',
+            '<strong>FinSight AI</strong> &mdash; anomaly detection on transaction data, with dashboards surfacing what looks wrong. Python, FastAPI, PostgreSQL.',
+            'Designed, built and shipped both alone.'],
+     metrics:[['~80%','less analysis time']]},
+
+    {key:'top',num:'05',nav:'stack',tag:'Stack.',step:'Stack',
+     h:'What I build in.',
+     items:['<strong>React</strong>, HTML, CSS, JavaScript &mdash; interface, state, motion.',
+            'Python, FastAPI, SQL, PostgreSQL, Docker, Git.',
+            'Machine learning for real products. Published at <strong>IEEE CONECCT 2026</strong>.']},
+
+    {key:'bottom',num:'06',nav:'contact',tag:'Say hello.',step:'Contact',
+     h:'Get in touch.',
+     items:['ziyasoudagar03@gmail.com',
+            '<a href="https://github.com/z1taz">github.com/z1taz</a>',
+            '<a href="https://www.linkedin.com/in/ziya-s-846562320">linkedin.com/in/ziya-s-846562320</a>']}
+  ];
+
+  const STATES={front:{rx:0,ry:0},right:{rx:0,ry:-90},back:{rx:0,ry:-180},left:{rx:0,ry:90},top:{rx:-90,ry:0},bottom:{rx:90,ry:0}};
+  const HEAT=['var(--h1)','var(--h1)','var(--h2)','var(--h2)','var(--h3)','var(--h4)'];
+  const GRID=9;
+  const cube=document.getElementById('cube'),scene=document.getElementById('scene'),dotsWrap=document.getElementById('dots');
+
+  FACES.forEach(f=>{
+    const face=document.createElement('div');face.className='face '+f.key;
+    const panel=document.createElement('div');panel.className='panel';
+    let m='';
+    if(f.metrics) m='<div class="metrics">'+f.metrics.map(x=>`<div class="metric"><div class="n">${x[0]}</div><div class="l">${x[1]}</div></div>`).join('')+'</div>';
+    panel.innerHTML=`<div class="step">${f.step}</div><h2>${f.h}</h2><ul>${f.items.map(i=>`<li>${i}</li>`).join('')}</ul>${m}`;
+    face.appendChild(panel);
+
+    const cover=document.createElement('div');cover.className='cover';cover.dataset.cover=f.key;
+    const heat=document.createElement('div');heat.className='heat';
+    heat.style.gridTemplateColumns=`repeat(${GRID},1fr)`;heat.style.gridTemplateRows=`repeat(${GRID},1fr)`;
+    for(let i=0;i<GRID*GRID;i++){
+      const c=document.createElement('div');c.className='cell';
+      const col=i%GRID,row=Math.floor(i/GRID);
+      const cx=(col-GRID/2)/GRID,cy=(row-GRID/2)/GRID;
+      const d=Math.sqrt(cx*cx+cy*cy);
+      const idx=Math.max(0,Math.min(HEAT.length-1,Math.floor((1-d*1.6)*HEAT.length)));
+      c.style.background=HEAT[idx];
+      c.style.setProperty('--o',(0.16+Math.max(0,(1-d*1.7))*0.55).toFixed(3));
+      c.style.animationDelay=(Math.random()*4.5).toFixed(2)+'s';
+      heat.appendChild(c);
+    }
+    cover.appendChild(heat);
+    const ui=document.createElement('div');ui.className='cover-ui';
+    ui.innerHTML=`<div><div class="num">${f.num}</div><div class="tag">${f.tag}</div></div><div class="open-hint">click to open &rarr;</div>`;
+    cover.appendChild(ui);face.appendChild(cover);cube.appendChild(face);
+
+    const dot=document.createElement('button');dot.className='dot';dot.dataset.face=f.key;dot.textContent=f.nav;
+    dotsWrap.appendChild(dot);
+  });
+
+  let rx=-14,ry=-22,vx=0,vy=0.13;
+  let dragging=false,sx=0,sy=0,srx=0,sry=0,moved=0,lastX=0,lastY=0;
+  let openFace=null,snapping=false,tRx=0,tRy=0;
+
+  function setDots(){[...dotsWrap.children].forEach(d=>d.classList.toggle('active',d.dataset.face===openFace));}
+  function closeCover(){if(!openFace)return;const c=cube.querySelector(`[data-cover="${openFace}"]`);if(c)c.classList.remove('open');openFace=null;snapping=false;setDots();}
+  function shortestTo(a,t){return a+((((t-a)+540)%360)-180);}
+  function nearestFace(){let b='front',bs=Infinity;for(const k in STATES){const s=STATES[k];
+    const dx=Math.abs((((rx-s.rx)+540)%360)-180),dy=Math.abs((((ry-s.ry)+540)%360)-180);
+    if(dx+dy<bs){bs=dx+dy;b=k;}}return b;}
+  function openAt(k){openFace=k;snapping=true;tRx=shortestTo(rx,STATES[k].rx);tRy=shortestTo(ry,STATES[k].ry);vx=vy=0;
+    const c=cube.querySelector(`[data-cover="${k}"]`);if(c)setTimeout(()=>c.classList.add('open'),330);setDots();}
+
+  function frame(){
+    if(!dragging){
+      if(snapping){rx+=(tRx-rx)*0.14;ry+=(tRy-ry)*0.14;
+        if(Math.abs(tRx-rx)<0.05&&Math.abs(tRy-ry)<0.05){rx=tRx;ry=tRy;snapping=false;}}
+      else if(!openFace){rx+=vx;ry+=vy;vx*=0.96;vy*=0.96;
+        if(Math.abs(vy)<0.06)vy+=(0.11-vy)*0.02;rx=Math.max(-72,Math.min(72,rx));}
+    }
+    cube.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;
+    requestAnimationFrame(frame);
+  }
+
+  function down(x,y){dragging=true;moved=0;sx=lastX=x;sy=lastY=y;srx=rx;sry=ry;snapping=false;scene.classList.add('dragging');}
+  function move(x,y){if(!dragging)return;const dx=x-sx,dy=y-sy;moved=Math.hypot(dx,dy);
+    ry=sry+dx*0.5;rx=Math.max(-72,Math.min(72,srx-dy*0.5));
+    vx=-(y-lastY)*0.11;vy=(x-lastX)*0.11;lastX=x;lastY=y;
+    if(moved>8&&openFace)closeCover();}
+  function up(){if(!dragging)return;dragging=false;scene.classList.remove('dragging');
+    if(moved<7){const k=nearestFace();if(openFace===k)closeCover();else{closeCover();openAt(k);}}}
+
+  if(window.PointerEvent){
+    scene.addEventListener('pointerdown',e=>{scene.setPointerCapture(e.pointerId);down(e.clientX,e.clientY);});
+    scene.addEventListener('pointermove',e=>move(e.clientX,e.clientY));
+    scene.addEventListener('pointerup',up);
+    scene.addEventListener('pointercancel',up);
+  } else {
+    scene.addEventListener('mousedown',e=>{e.preventDefault();down(e.clientX,e.clientY);});
+    window.addEventListener('mousemove',e=>move(e.clientX,e.clientY));
+    window.addEventListener('mouseup',up);
+    scene.addEventListener('touchstart',e=>{const t=e.touches[0];down(t.clientX,t.clientY);},{passive:true});
+    scene.addEventListener('touchmove',e=>{const t=e.touches[0];move(t.clientX,t.clientY);},{passive:true});
+    scene.addEventListener('touchend',up);
+  }
+
+  dotsWrap.addEventListener('click',e=>{const b=e.target.closest('.dot');if(!b)return;
+    if(openFace===b.dataset.face){closeCover();return;}closeCover();openAt(b.dataset.face);});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCover();});
+
+  frame();
+})();
+</script>
+</body>
 </html>
