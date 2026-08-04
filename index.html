@@ -54,7 +54,9 @@
     backface-visibility:hidden;-webkit-backface-visibility:hidden;}
   .cover,.panel{position:absolute;inset:0;border-radius:18px;overflow:hidden;}
   .panel{background:linear-gradient(155deg,#16103A,#0C0922 70%);box-shadow:inset 0 0 0 1px var(--edge);
-    padding:min(5.6vmin,50px);display:flex;flex-direction:column;justify-content:center;gap:18px;}
+    padding:min(5.6vmin,50px);display:flex;flex-direction:column;justify-content:center;gap:18px;
+    visibility:hidden;}
+  .face.reveal .panel{visibility:visible;}
   .panel .step{font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--h2);}
   .panel h2{font-family:var(--display);font-size:clamp(18px,2.7vmin,29px);font-weight:700;margin:0;color:#fff;letter-spacing:-0.015em;line-height:1.2;}
   .panel ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;}
@@ -209,6 +211,9 @@
     if(!openFace)return;
     const c=cube.querySelector(`[data-cover="${openFace}"]`);
     if(c)c.classList.remove('open');
+    // Hide the panel again
+    const face=cube.querySelector(`.face.${openFace}`);
+    if(face)face.classList.remove('reveal');
     showAllFaces();
     openFace=null;snapping=false;setDots();
   }
@@ -221,7 +226,12 @@
     // Hide other faces immediately to prevent bleed-through
     hideOtherFaces(k);
     const c=cube.querySelector(`[data-cover="${k}"]`);
-    if(c)setTimeout(()=>c.classList.add('open'),330);
+    if(c)setTimeout(()=>{
+      c.classList.add('open');
+      // Reveal the panel content now that the cover is flipping
+      const face=cube.querySelector(`.face.${k}`);
+      if(face)face.classList.add('reveal');
+    },330);
     setDots();
   }
 
