@@ -1,0 +1,324 @@
+import React, { useState, useEffect, useRef, useCallback } from "react";
+
+/**
+ * Session — a shared view of a long-running agent run.
+ *
+ * The problem: an agent works for minutes, not seconds. A person needs to see
+ * what it is doing, stop it before it does something irreversible, and hand off
+ * to a teammate mid-run without losing the thread.
+ */
+
+const STYLES = `
+.sr-root{--bg:#0C0D12;--panel:#14161D;--raised:#1B1E27;--line:#272B36;--line-soft:#1F2129;
+  --ink:#ECEEF3;--dim:#8A90A0;--faint:#5A6070;
+  --run:#4C8DFF;--ok:#3DD68C;--wait:#FFB020;--stop:#FF5C7A;
+  --mono:ui-monospace,'SF Mono',Menlo,monospace;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--bg);color:var(--ink);font-family:var(--sans);
+  min-height:100vh;display:flex;flex-direction:column;font-size:14px;}
+.sr-root *{box-sizing:border-box;}
+
+.sr-top{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:12px 18px;border-bottom:1px solid var(--line);background:var(--panel);}
+.sr-title{display:flex;align-items:center;gap:10px;min-width:0;}
+.sr-title h1{font-size:14px;font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sr-chan{font-family:var(--mono);font-size:11.5px;color:var(--faint);}
+
+.sr-state{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11.5px;
+  padding:4px 10px;border-radius:20px;border:1px solid var(--line);background:var(--raised);}
+.sr-pulse{width:7px;height:7px;border-radius:50%;background:var(--run);
+  animation:srpulse 1.4s ease-in-out infinite;}
+.sr-state.paused .sr-pulse{background:var(--wait);animation:none;}
+.sr-state.done .sr-pulse{background:var(--ok);animation:none;}
+.sr-state.stopped .sr-pulse{background:var(--stop);animation:none;}
+@keyframes srpulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+
+.sr-right{display:flex;align-items:center;gap:14px;}
+.sr-people{display:flex;align-items:center;}
+.sr-av{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;
+  font-size:10px;font-weight:600;font-family:var(--mono);color:#0B0C10;
+  border:2px solid var(--panel);margin-left:-7px;}
+.sr-av:first-child{margin-left:0;}
+.sr-lat{font-family:var(--mono);font-size:11px;color:var(--faint);}
+.sr-lat b{color:var(--dim);font-weight:500;}
+
+.sr-body{flex:1;display:flex;min-height:0;}
+.sr-main{flex:1;overflow-y:auto;padding:18px 20px 90px;min-width:0;}
+.sr-side{width:260px;border-left:1px solid var(--line);padding:16px 16px 30px;
+  overflow-y:auto;background:var(--panel);}
+@media(max-width:860px){.sr-side{display:none;}}
+
+.sr-goal{border:1px solid var(--line);border-radius:10px;background:var(--panel);
+  padding:13px 15px;margin-bottom:20px;}
+.sr-goal .lab{font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:6px;}
+.sr-goal p{margin:0;font-size:13.5px;line-height:1.55;color:var(--ink);}
+
+.sr-step{display:flex;gap:12px;padding:9px 10px;border-radius:8px;position:relative;
+  border:1px solid transparent;cursor:pointer;}
+.sr-step:hover{background:var(--panel);}
+.sr-step.sel{background:var(--panel);border-color:var(--line);}
+.sr-step.gate{border-color:rgba(255,176,32,.4);background:rgba(255,176,32,.06);}
+
+.sr-rail{display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:3px;}
+.sr-node{width:9px;height:9px;border-radius:50%;border:2px solid var(--faint);}
+.sr-node.on{background:var(--ok);border-color:var(--ok);}
+.sr-node.act{background:var(--run);border-color:var(--run);animation:srpulse 1.2s infinite;}
+.sr-node.gate{background:var(--wait);border-color:var(--wait);}
+.sr-node.halt{background:var(--stop);border-color:var(--stop);}
+.sr-wire{flex:1;width:2px;background:var(--line);margin-top:4px;min-height:12px;}
+
+.sr-content{flex:1;min-width:0;}
+.sr-line{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;}
+.sr-verb{font-size:13.5px;color:var(--ink);}
+.sr-verb b{font-weight:600;}
+.sr-tool{font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:5px;
+  background:var(--raised);border:1px solid var(--line);color:var(--dim);}
+.sr-ms{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-left:auto;flex-shrink:0;}
+.sr-out{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:5px;
+  line-height:1.6;white-space:pre-wrap;word-break:break-word;}
+.sr-by{font-size:11px;color:var(--faint);margin-top:5px;}
+
+.sr-gatebox{margin-top:10px;padding:11px 12px;border-radius:8px;
+  background:var(--raised);border:1px solid rgba(255,176,32,.35);}
+.sr-gatebox .warn{font-size:12.5px;color:var(--ink);margin-bottom:9px;line-height:1.5;}
+.sr-gatebox .warn b{color:var(--wait);}
+.sr-acts{display:flex;gap:8px;flex-wrap:wrap;}
+.sr-btn{font-family:var(--sans);font-size:12.5px;padding:6px 13px;border-radius:7px;
+  border:1px solid var(--line);background:var(--raised);color:var(--ink);cursor:pointer;}
+.sr-btn:hover{border-color:var(--faint);}
+.sr-btn.go{background:var(--ok);border-color:var(--ok);color:#062B1A;font-weight:600;}
+.sr-btn.no{background:transparent;border-color:rgba(255,92,122,.5);color:var(--stop);}
+.sr-btn kbd{font-family:var(--mono);font-size:10px;opacity:.65;margin-left:6px;}
+
+.sr-empty{padding:44px 10px;text-align:left;}
+.sr-empty h3{font-size:14.5px;margin:0 0 7px;font-weight:600;}
+.sr-empty p{margin:0 0 16px;color:var(--dim);font-size:13px;line-height:1.6;max-width:44ch;}
+
+.sr-sec{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint);margin:0 0 10px;}
+.sr-side .sr-sec:not(:first-child){margin-top:22px;}
+.sr-fact{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;
+  padding:5px 0;border-bottom:1px solid var(--line-soft);}
+.sr-fact span{color:var(--dim);}
+.sr-fact b{font-family:var(--mono);font-weight:500;font-size:11.5px;}
+.sr-mem{font-size:12px;color:var(--dim);line-height:1.55;padding:7px 9px;border-radius:6px;
+  background:var(--raised);border:1px solid var(--line);margin-bottom:7px;}
+.sr-mem b{color:var(--ink);font-weight:600;}
+
+.sr-bar{position:sticky;bottom:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:11px 18px;border-top:1px solid var(--line);background:var(--panel);}
+.sr-keys{margin-left:auto;display:flex;gap:12px;font-family:var(--mono);font-size:10.5px;color:var(--faint);}
+.sr-keys kbd{background:var(--raised);border:1px solid var(--line);border-radius:4px;
+  padding:1px 5px;margin-right:4px;color:var(--dim);}
+@media(max-width:640px){.sr-keys{display:none;}}
+`;
+
+const PEOPLE = [
+  { id: "zs", initials: "ZS", color: "#4C8DFF" },
+  { id: "ap", initials: "AP", color: "#3DD68C" },
+  { id: "rk", initials: "RK", color: "#FFB020" },
+];
+
+const SCRIPT = [
+  { verb: "Read the failing test suite", tool: "repo.read", ms: 240,
+    out: "17 files scanned · 3 failures in checkout/tax.spec.ts" },
+  { verb: "Traced the failure to a rounding rule", tool: "repo.read", ms: 910,
+    out: "tax.ts:88 — rounds per line item, spec expects rounding on the order total" },
+  { verb: "Drafted a fix and ran the suite locally", tool: "shell", ms: 4300,
+    out: "3 failing → 0 failing · 214 passed" },
+  { verb: "Open a pull request against main", tool: "github.write", ms: 0,
+    gate: true,
+    warn: "This writes to a shared branch and notifies 6 reviewers." },
+  { verb: "Posted the summary to #checkout", tool: "slack.write", ms: 380,
+    out: "Linked PR #4412 with the before/after test counts" },
+];
+
+export default function SessionRun() {
+  const [steps, setSteps] = useState([]);
+  const [status, setStatus] = useState("idle"); // idle running waiting done stopped
+  const [sel, setSel] = useState(-1);
+  const [latency, setLatency] = useState(48);
+  const [elapsed, setElapsed] = useState(0);
+  const [viewers, setViewers] = useState([PEOPLE[0]]);
+  const timers = useRef([]);
+  const scrollRef = useRef(null);
+
+  const clearTimers = () => { timers.current.forEach(clearTimeout); timers.current = []; };
+  useEffect(() => () => clearTimers(), []);
+
+  // elapsed clock
+  useEffect(() => {
+    if (status !== "running" && status !== "waiting") return;
+    const t = setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => clearInterval(t);
+  }, [status]);
+
+  // ambient latency
+  useEffect(() => {
+    const t = setInterval(() => setLatency(34 + Math.round(Math.random() * 46)), 2200);
+    return () => clearInterval(t);
+  }, []);
+
+  const pushStep = useCallback((i) => {
+    const s = SCRIPT[i];
+    setSteps((prev) => [...prev, { ...s, i, state: s.gate ? "gate" : "active" }]);
+    setSel(i);
+    if (s.gate) { setStatus("waiting"); return; }
+    const t = setTimeout(() => {
+      setSteps((prev) => prev.map((x) => (x.i === i ? { ...x, state: "done" } : x)));
+      if (i + 1 < SCRIPT.length) pushStep(i + 1);
+      else setStatus("done");
+    }, Math.max(600, s.ms / 4));
+    timers.current.push(t);
+  }, []);
+
+  const start = () => {
+    clearTimers(); setSteps([]); setElapsed(0); setStatus("running"); pushStep(0);
+    // a teammate joins mid-run
+    const j = setTimeout(() => setViewers([PEOPLE[0], PEOPLE[1]]), 3400);
+    const k = setTimeout(() => setViewers([PEOPLE[0], PEOPLE[1], PEOPLE[2]]), 7000);
+    timers.current.push(j, k);
+  };
+
+  const approve = () => {
+    const g = steps.find((s) => s.state === "gate");
+    if (!g) return;
+    setSteps((p) => p.map((x) => (x.i === g.i ? { ...x, state: "done", by: "Approved by you", out: "PR #4412 opened · 6 reviewers notified" } : x)));
+    setStatus("running");
+    if (g.i + 1 < SCRIPT.length) pushStep(g.i + 1); else setStatus("done");
+  };
+
+  const deny = () => {
+    const g = steps.find((s) => s.state === "gate");
+    if (!g) return;
+    clearTimers();
+    setSteps((p) => p.map((x) => (x.i === g.i ? { ...x, state: "halt", by: "Declined by you — run stopped here", out: null } : x)));
+    setStatus("stopped");
+  };
+
+  const reset = () => { clearTimers(); setSteps([]); setStatus("idle"); setSel(-1); setElapsed(0); setViewers([PEOPLE[0]]); };
+
+  // keyboard flow
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (e.key === "j") setSel((s) => Math.min(steps.length - 1, s + 1));
+      if (e.key === "k") setSel((s) => Math.max(0, s - 1));
+      if (e.key === "a" && status === "waiting") { e.preventDefault(); approve(); }
+      if (e.key === "x" && status === "waiting") { e.preventDefault(); deny(); }
+      if (e.key === "Enter" && status === "idle") start();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [steps, status]);
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [steps]);
+
+  const mmss = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
+  const label = { idle: "not started", running: "running", waiting: "waiting on you", done: "finished", stopped: "stopped" }[status];
+  const cls = { idle: "paused", running: "", waiting: "paused", done: "done", stopped: "stopped" }[status];
+
+  return (
+    <div className="sr-root">
+      <style>{STYLES}</style>
+
+      <header className="sr-top">
+        <div className="sr-title">
+          <h1>Fix the checkout tax rounding</h1>
+          <span className="sr-chan">#checkout</span>
+        </div>
+        <div className="sr-right">
+          <div className={`sr-state ${cls}`}><span className="sr-pulse" />{label} · {mmss}</div>
+          <div className="sr-people">
+            {viewers.map((p) => (
+              <div key={p.id} className="sr-av" style={{ background: p.color }} title={p.initials}>{p.initials}</div>
+            ))}
+          </div>
+          <div className="sr-lat">round trip <b>{latency}ms</b></div>
+        </div>
+      </header>
+
+      <div className="sr-body">
+        <main className="sr-main" ref={scrollRef}>
+          <div className="sr-goal">
+            <div className="lab">What it was asked to do</div>
+            <p>Find why the checkout tax tests are failing, fix it, and open a PR. Ask before anything leaves this machine.</p>
+          </div>
+
+          {steps.length === 0 && (
+            <div className="sr-empty">
+              <h3>Nothing has run yet.</h3>
+              <p>Start the session and the agent works through it step by step. It stops on its own before any action that other people would see.</p>
+              <button className="sr-btn go" onClick={start}>Start the run<kbd>↵</kbd></button>
+            </div>
+          )}
+
+          {steps.map((s, idx) => (
+            <div
+              key={s.i}
+              className={`sr-step ${sel === s.i ? "sel" : ""} ${s.state === "gate" ? "gate" : ""}`}
+              onClick={() => setSel(s.i)}
+            >
+              <div className="sr-rail">
+                <div className={`sr-node ${s.state === "done" ? "on" : s.state === "active" ? "act" : s.state === "gate" ? "gate" : s.state === "halt" ? "halt" : ""}`} />
+                {idx < steps.length - 1 && <div className="sr-wire" />}
+              </div>
+              <div className="sr-content">
+                <div className="sr-line">
+                  <span className="sr-verb"><b>{s.verb}</b></span>
+                  <span className="sr-tool">{s.tool}</span>
+                  {s.ms > 0 && s.state !== "gate" && <span className="sr-ms">{s.ms}ms</span>}
+                </div>
+                {s.out && <div className="sr-out">{s.out}</div>}
+                {s.by && <div className="sr-by">{s.by}</div>}
+
+                {s.state === "gate" && (
+                  <div className="sr-gatebox">
+                    <div className="warn"><b>Needs your approval.</b> {s.warn}</div>
+                    <div className="sr-acts">
+                      <button className="sr-btn go" onClick={approve}>Approve<kbd>A</kbd></button>
+                      <button className="sr-btn no" onClick={deny}>Decline<kbd>X</kbd></button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </main>
+
+        <aside className="sr-side">
+          <div className="sr-sec">This run</div>
+          <div className="sr-fact"><span>Steps</span><b>{steps.filter(s => s.state === "done").length}/{SCRIPT.length}</b></div>
+          <div className="sr-fact"><span>Approvals</span><b>{status === "waiting" ? "1 pending" : "0 pending"}</b></div>
+          <div className="sr-fact"><span>Elapsed</span><b>{mmss}</b></div>
+          <div className="sr-fact"><span>Watching</span><b>{viewers.length}</b></div>
+
+          <div className="sr-sec">Carried over</div>
+          <div className="sr-mem"><b>Tax rounds on the order total</b>, not per line item — decided in #checkout last Thursday.</div>
+          <div className="sr-mem"><b>Never push straight to main.</b> Standing rule for this channel.</div>
+
+          <div className="sr-sec">Allowed to use</div>
+          <div className="sr-fact"><span>repo.read</span><b>auto</b></div>
+          <div className="sr-fact"><span>shell</span><b>auto</b></div>
+          <div className="sr-fact"><span>github.write</span><b>ask first</b></div>
+          <div className="sr-fact"><span>slack.write</span><b>auto</b></div>
+        </aside>
+      </div>
+
+      <footer className="sr-bar">
+        {status === "idle" && <button className="sr-btn go" onClick={start}>Start the run</button>}
+        {status === "waiting" && <><button className="sr-btn go" onClick={approve}>Approve step</button><button className="sr-btn no" onClick={deny}>Decline</button></>}
+        {(status === "done" || status === "stopped") && <button className="sr-btn" onClick={reset}>Run it again</button>}
+        {status === "running" && <button className="sr-btn no" onClick={() => { clearTimers(); setStatus("stopped"); }}>Stop the run</button>}
+        <div className="sr-keys">
+          <span><kbd>J</kbd><kbd>K</kbd>move</span>
+          <span><kbd>A</kbd>approve</span>
+          <span><kbd>X</kbd>decline</span>
+        </div>
+      </footer>
+    </div>
+  );
+}
