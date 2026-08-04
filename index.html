@@ -34,12 +34,10 @@
   .hint-line b{color:var(--muted);font-weight:400;}
 
   .stage{position:relative;z-index:3;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;}
-  .scene{perspective:calc(var(--size)*3);width:var(--size);height:var(--size);display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;user-select:none;}
+  .scene{perspective:calc(var(--size)*3);width:var(--size);height:var(--size);display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
   .scene.dragging{cursor:grabbing;}
   .cube{position:relative;width:var(--size);height:var(--size);transform-style:preserve-3d;will-change:transform;}
-
-  .face{position:absolute;width:var(--size);height:var(--size);transform-style:preserve-3d;
-    backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+  .face{position:absolute;width:var(--size);height:var(--size);transform-style:preserve-3d;}
   .face.front {transform:translateZ(calc(var(--size)/2));}
   .face.right {transform:rotateY(90deg)   translateZ(calc(var(--size)/2));}
   .face.back  {transform:rotateY(180deg)  translateZ(calc(var(--size)/2));}
@@ -47,31 +45,23 @@
   .face.top   {transform:rotateX(90deg)   translateZ(calc(var(--size)/2));}
   .face.bottom{transform:rotateX(-90deg)  translateZ(calc(var(--size)/2));}
 
-  /* When a face is open, completely remove all other faces from rendering */
-  .face.hidden-face{display:none !important;}
-
-  .cover,.panel,.cover-ui,.heat,.cell{
-    backface-visibility:hidden;-webkit-backface-visibility:hidden;}
   .cover,.panel{position:absolute;inset:0;border-radius:18px;overflow:hidden;}
   .panel{background:linear-gradient(155deg,#16103A,#0C0922 70%);box-shadow:inset 0 0 0 1px var(--edge);
-    padding:min(5.6vmin,50px);display:flex;flex-direction:column;justify-content:center;gap:18px;
-    visibility:hidden;transform-style:preserve-3d;}
-  .face.reveal .panel{visibility:visible;}
-  .panel .step{font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--h2);transform:translateZ(10px);}
-  .panel h2{font-family:var(--display);font-size:clamp(18px,2.7vmin,29px);font-weight:700;margin:0;color:#fff;letter-spacing:-0.015em;line-height:1.2;transform:translateZ(10px);}
-  .panel ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;transform:translateZ(10px);}
+    padding:min(5.6vmin,50px);display:flex;flex-direction:column;justify-content:center;gap:18px;}
+  .panel .step{font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--h2);}
+  .panel h2{font-family:var(--display);font-size:clamp(18px,2.7vmin,29px);font-weight:700;margin:0;color:#fff;letter-spacing:-0.015em;line-height:1.2;}
+  .panel ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;}
   .panel li{font-family:var(--display);font-weight:500;font-size:clamp(12.5px,1.6vmin,16px);color:var(--muted);line-height:1.45;padding-left:16px;position:relative;}
   .panel li::before{content:'';position:absolute;left:0;top:0.62em;width:5px;height:5px;border-radius:50%;background:var(--h3);}
   .panel li strong{color:var(--text);font-weight:600;}
-  .panel a{color:var(--h2);position:relative;z-index:20;pointer-events:auto;cursor:pointer;text-decoration:underline;text-underline-offset:3px;transform:translateZ(20px);display:inline-block;}
-  .panel a:hover{color:#fff;transform:translateZ(20px);}
-  .panel .metrics{display:flex;gap:26px;flex-wrap:wrap;transform:translateZ(10px);}
+  .panel a{color:var(--h2);}
+  .panel .metrics{display:flex;gap:26px;flex-wrap:wrap;}
   .panel .metric .n{font-family:var(--display);font-size:clamp(22px,3.4vmin,38px);font-weight:700;color:var(--h4);line-height:1;}
   .panel .metric .l{font-size:10px;color:var(--faint);margin-top:6px;letter-spacing:0.05em;}
 
   .cover{background:var(--glass);box-shadow:inset 0 0 0 1px var(--edge),0 18px 60px rgba(0,0,0,0.6);
     transform-origin:left center;transform:rotateY(0deg);
-    transition:transform 620ms cubic-bezier(.34,.9,.28,1);cursor:pointer;}
+    transition:transform 620ms cubic-bezier(.34,.9,.28,1);backface-visibility:hidden;cursor:pointer;}
   .cover.open{transform:rotateY(-118deg);}
 
   .heat{position:absolute;inset:0;display:grid;gap:3px;padding:min(3.6vmin,28px);}
@@ -112,23 +102,26 @@
             '70%, 80%, 100% of the manual checking &mdash; gone, across four builds.',
             'I care what happens when it is slow, empty, or wrong.']},
 
-    {key:'right',num:'02',nav:'session',tag:'Session.',step:'Live prototype &mdash; React',
-     h:'Watching an agent work, without losing control of it.',
-     items:['Steps stream live. The run <strong>stops itself</strong> before anything other people would see.',
-            'Approve or decline it. Teammates appear mid-run. Full keyboard flow.',
+    {key:'right',num:'02',nav:'live demo',tag:'An agent, watched live.',step:'Live prototype &mdash; React, no bundler by design',
+     h:'An AI works through a task while you watch it.',
+     items:['Steps stream in one by one, live. It <strong>stops itself</strong> before anything other people would see.',
+            'You approve or decline that step. Teammates can join mid-run. Full keyboard flow.',
+            '<strong>The call:</strong> it almost asked before every action. Cut back to only the one that could not be undone &mdash; anything less and nobody would trust it, anything more and nobody would use it.',
             '<a href="session.html">Open the prototype &rarr;</a>']},
 
-    {key:'back',num:'03',nav:'the work',tag:'225 live signals.',step:'The work',
-     h:'Real-time data, made trustworthy.',
-     items:['A clinical prototype streaming <strong>225 channels</strong> continuously into a live dashboard.',
+    {key:'back',num:'03',nav:'pressure mat',tag:'A pressure mat, made trustworthy.',step:'Pressure-mat prototype',
+     h:'A floor sensor read 225 times a second &mdash; every reading has to be right.',
+     items:['A pressure-sensing mat streaming <strong>225 channels</strong> continuously into a live dashboard.',
             'Used with children with cerebral palsy in a hospital.',
-            'Bad readings look identical to real ones. I built the validation that caught them before the screen did.'],
+            'Bad readings look identical to real ones. I built the validation that caught them before the screen did.',
+            '<strong>The call:</strong> flagging every noisy reading would have buried the real ones. A bad sensor repeats a pattern; noise does not &mdash; so I validated against that pattern, not a single reading.'],
      metrics:[['225','channels'],['100%','data stability'],['~70%','less manual checking']]},
 
     {key:'left',num:'04',nav:'built solo',tag:'Dense data, made readable.',step:'Built solo',
      h:'Two tools, end to end.',
      items:['<strong>Log Visualizer</strong> &mdash; turns long machine-generated reports into interactive dashboards, scoring each 0&ndash;100 so the worst surfaces first.',
             '<strong>FinSight AI</strong> &mdash; anomaly detection on transaction data, with dashboards surfacing what looks wrong. Python, FastAPI, PostgreSQL.',
+            '<strong>The call:</strong> nobody was going to read the full report. The score had to lead, not the data &mdash; rank by risk first, let people drill into raw detail only if they chose to.',
             'Designed, built and shipped both alone.'],
      metrics:[['~80%','less analysis time']]},
 
@@ -141,17 +134,16 @@
     {key:'bottom',num:'06',nav:'contact',tag:'Say hello.',step:'Contact',
      h:'Get in touch.',
      items:['ziyasoudagar03@gmail.com',
-            '<a href="https://github.com/z1taz" target="_blank" rel="noopener">github.com/z1taz</a>',
-            '<a href="https://www.linkedin.com/in/ziya-s-846562320" target="_blank" rel="noopener">linkedin.com/in/ziya-s-846562320</a>']}
+            '<a href="https://github.com/z1taz">github.com/z1taz</a>',
+            '<a href="https://www.linkedin.com/in/ziya-s-846562320">linkedin.com/in/ziya-s-846562320</a>']}
   ];
+
+
 
   const STATES={front:{rx:0,ry:0},right:{rx:0,ry:-90},back:{rx:0,ry:-180},left:{rx:0,ry:90},top:{rx:-90,ry:0},bottom:{rx:90,ry:0}};
   const HEAT=['var(--h1)','var(--h1)','var(--h2)','var(--h2)','var(--h3)','var(--h4)'];
   const GRID=9;
   const cube=document.getElementById('cube'),scene=document.getElementById('scene'),dotsWrap=document.getElementById('dots');
-
-  // Track which element was under the pointer at pointerdown
-  let downTarget=null;
 
   FACES.forEach(f=>{
     const face=document.createElement('div');face.className='face '+f.key;
@@ -160,11 +152,6 @@
     if(f.metrics) m='<div class="metrics">'+f.metrics.map(x=>`<div class="metric"><div class="n">${x[0]}</div><div class="l">${x[1]}</div></div>`).join('')+'</div>';
     panel.innerHTML=`<div class="step">${f.step}</div><h2>${f.h}</h2><ul>${f.items.map(i=>`<li>${i}</li>`).join('')}</ul>${m}`;
     face.appendChild(panel);
-
-    // Stop propagation on panel so mouse movements/clicks inside panel never trigger cube drag
-    panel.addEventListener('pointerdown',e=>e.stopPropagation());
-    panel.addEventListener('mousedown',e=>e.stopPropagation());
-    panel.addEventListener('touchstart',e=>e.stopPropagation());
 
     const cover=document.createElement('div');cover.className='cover';cover.dataset.cover=f.key;
     const heat=document.createElement('div');heat.className='heat';
@@ -194,41 +181,13 @@
   let openFace=null,snapping=false,tRx=0,tRy=0;
 
   function setDots(){[...dotsWrap.children].forEach(d=>d.classList.toggle('active',d.dataset.face===openFace));}
-
-  function hideOtherFaces(activeKey){
-    cube.querySelectorAll('.face').forEach(f=>{
-      if(!f.classList.contains(activeKey)) f.classList.add('hidden-face');
-    });
-  }
-  function showAllFaces(){
-    cube.querySelectorAll('.face.hidden-face').forEach(f=>f.classList.remove('hidden-face'));
-  }
-
-  function closeCover(){
-    if(!openFace)return;
-    const c=cube.querySelector(`[data-cover="${openFace}"]`);
-    if(c)c.classList.remove('open');
-    // Hide the panel again
-    const face=cube.querySelector(`.face.${openFace}`);
-    if(face)face.classList.remove('reveal');
-    showAllFaces();
-    openFace=null;snapping=false;setDots();
-  }
+  function closeCover(){if(!openFace)return;const c=cube.querySelector(`[data-cover="${openFace}"]`);if(c)c.classList.remove('open');openFace=null;snapping=false;setDots();}
   function shortestTo(a,t){return a+((((t-a)+540)%360)-180);}
   function nearestFace(){let b='front',bs=Infinity;for(const k in STATES){const s=STATES[k];
     const dx=Math.abs((((rx-s.rx)+540)%360)-180),dy=Math.abs((((ry-s.ry)+540)%360)-180);
     if(dx+dy<bs){bs=dx+dy;b=k;}}return b;}
-  function openAt(k){
-    openFace=k;snapping=true;tRx=shortestTo(rx,STATES[k].rx);tRy=shortestTo(ry,STATES[k].ry);vx=vy=0;
-    hideOtherFaces(k);
-    const c=cube.querySelector(`[data-cover="${k}"]`);
-    if(c)setTimeout(()=>{
-      c.classList.add('open');
-      const face=cube.querySelector(`.face.${k}`);
-      if(face)face.classList.add('reveal');
-    },330);
-    setDots();
-  }
+  function openAt(k){openFace=k;snapping=true;tRx=shortestTo(rx,STATES[k].rx);tRy=shortestTo(ry,STATES[k].ry);vx=vy=0;
+    const c=cube.querySelector(`[data-cover="${k}"]`);if(c)setTimeout(()=>c.classList.add('open'),330);setDots();}
 
   function frame(){
     if(!dragging){
@@ -250,19 +209,19 @@
     if(moved<7){const k=nearestFace();if(openFace===k)closeCover();else{closeCover();openAt(k);}}}
 
   scene.addEventListener('pointerdown',e=>{
-    downTarget=e.target;
-    if(e.target.closest('a') || e.target.closest('.panel')) return;
-    e.preventDefault();
+    try{ scene.setPointerCapture(e.pointerId); }catch(err){}
     down(e.clientX,e.clientY);
   });
-  scene.addEventListener('pointermove',e=>move(e.clientX,e.clientY));
-  scene.addEventListener('pointerup',e=>{
-    if(downTarget && (downTarget.closest('a') || downTarget.closest('.panel'))){downTarget=null;return;}
-    downTarget=null;
-    up();
-  });
-  scene.addEventListener('pointercancel',()=>{downTarget=null;up();});
-  scene.addEventListener('selectstart',e=>e.preventDefault());
+  window.addEventListener('pointermove',e=>move(e.clientX,e.clientY));
+  window.addEventListener('pointerup',up);
+  window.addEventListener('pointercancel',up);
+  // fallback for browsers with partial pointer-event support
+  scene.addEventListener('mousedown',e=>{ if(!window.PointerEvent){ e.preventDefault(); down(e.clientX,e.clientY); } });
+  window.addEventListener('mousemove',e=>{ if(!window.PointerEvent) move(e.clientX,e.clientY); });
+  window.addEventListener('mouseup',e=>{ if(!window.PointerEvent) up(); });
+  scene.addEventListener('touchstart',e=>{ if(!window.PointerEvent){ const t=e.touches[0]; down(t.clientX,t.clientY); } },{passive:true});
+  scene.addEventListener('touchmove',e=>{ if(!window.PointerEvent){ const t=e.touches[0]; move(t.clientX,t.clientY); } },{passive:true});
+  scene.addEventListener('touchend',e=>{ if(!window.PointerEvent) up(); });
 
   dotsWrap.addEventListener('click',e=>{const b=e.target.closest('.dot');if(!b)return;
     if(openFace===b.dataset.face){closeCover();return;}closeCover();openAt(b.dataset.face);});
