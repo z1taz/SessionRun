@@ -37,10 +37,9 @@
   .scene{perspective:calc(var(--size)*3);width:var(--size);height:var(--size);display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;user-select:none;}
   .scene.dragging{cursor:grabbing;}
   .cube{position:relative;width:var(--size);height:var(--size);transform-style:preserve-3d;will-change:transform;}
-  
+
   .face{position:absolute;width:var(--size);height:var(--size);transform-style:preserve-3d;
-    backface-visibility:hidden;-webkit-backface-visibility:hidden;
-    transition:opacity 300ms ease, visibility 300ms ease;}
+    backface-visibility:hidden;-webkit-backface-visibility:hidden;}
   .face.front {transform:translateZ(calc(var(--size)/2));}
   .face.right {transform:rotateY(90deg)   translateZ(calc(var(--size)/2));}
   .face.back  {transform:rotateY(180deg)  translateZ(calc(var(--size)/2));}
@@ -48,8 +47,8 @@
   .face.top   {transform:rotateX(90deg)   translateZ(calc(var(--size)/2));}
   .face.bottom{transform:rotateX(-90deg)  translateZ(calc(var(--size)/2));}
 
-  .cube.has-open .face:not(.open-face){
-    opacity:0;pointer-events:none;visibility:hidden;}
+  /* When a face is open, completely remove all other faces from rendering */
+  .face.hidden-face{display:none !important;}
 
   .cover,.panel,.cover-ui,.heat,.cell{
     backface-visibility:hidden;-webkit-backface-visibility:hidden;}
@@ -62,7 +61,8 @@
   .panel li{font-family:var(--display);font-weight:500;font-size:clamp(12.5px,1.6vmin,16px);color:var(--muted);line-height:1.45;padding-left:16px;position:relative;}
   .panel li::before{content:'';position:absolute;left:0;top:0.62em;width:5px;height:5px;border-radius:50%;background:var(--h3);}
   .panel li strong{color:var(--text);font-weight:600;}
-  .panel a{color:var(--h2);position:relative;z-index:10;pointer-events:auto;cursor:pointer;}
+  .panel a{color:var(--h2);position:relative;z-index:10;pointer-events:auto;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+  .panel a:hover{color:#fff;}
   .panel .metrics{display:flex;gap:26px;flex-wrap:wrap;}
   .panel .metric .n{font-family:var(--display);font-size:clamp(22px,3.4vmin,38px);font-weight:700;color:var(--h4);line-height:1;}
   .panel .metric .l{font-size:10px;color:var(--faint);margin-top:6px;letter-spacing:0.05em;}
@@ -148,6 +148,9 @@
   const GRID=9;
   const cube=document.getElementById('cube'),scene=document.getElementById('scene'),dotsWrap=document.getElementById('dots');
 
+  // Track which element was under the pointer at pointerdown (before capture steals target)
+  let downTarget=null;
+
   FACES.forEach(f=>{
     const face=document.createElement('div');face.className='face '+f.key;
     const panel=document.createElement('div');panel.className='panel';
@@ -155,6 +158,14 @@
     if(f.metrics) m='<div class="metrics">'+f.metrics.map(x=>`<div class="metric"><div class="n">${x[0]}</div><div class="l">${x[1]}</div></div>`).join('')+'</div>';
     panel.innerHTML=`<div class="step">${f.step}</div><h2>${f.h}</h2><ul>${f.items.map(i=>`<li>${i}</li>`).join('')}</ul>${m}`;
     face.appendChild(panel);
+
+    // Make links inside panels stop propagation so the cube drag logic never fires
+    panel.querySelectorAll('a').forEach(a=>{
+      a.addEventListener('pointerdown',e=>e.stopPropagation());
+      a.addEventListener('mousedown',e=>e.stopPropagation());
+      a.addEventListener('touchstart',e=>e.stopPropagation());
+      a.addEventListener('click',e=>e.stopPropagation());
+    });
 
     const cover=document.createElement('div');cover.className='cover';cover.dataset.cover=f.key;
     const heat=document.createElement('div');heat.className='heat';
@@ -184,12 +195,21 @@
   let openFace=null,snapping=false,tRx=0,tRy=0;
 
   function setDots(){[...dotsWrap.children].forEach(d=>d.classList.toggle('active',d.dataset.face===openFace));}
+
+  function hideOtherFaces(activeKey){
+    cube.querySelectorAll('.face').forEach(f=>{
+      if(!f.classList.contains(activeKey)) f.classList.add('hidden-face');
+    });
+  }
+  function showAllFaces(){
+    cube.querySelectorAll('.face.hidden-face').forEach(f=>f.classList.remove('hidden-face'));
+  }
+
   function closeCover(){
     if(!openFace)return;
     const c=cube.querySelector(`[data-cover="${openFace}"]`);
     if(c)c.classList.remove('open');
-    cube.classList.remove('has-open');
-    cube.querySelectorAll('.face').forEach(f=>f.classList.remove('open-face'));
+    showAllFaces();
     openFace=null;snapping=false;setDots();
   }
   function shortestTo(a,t){return a+((((t-a)+540)%360)-180);}
@@ -198,8 +218,8 @@
     if(dx+dy<bs){bs=dx+dy;b=k;}}return b;}
   function openAt(k){
     openFace=k;snapping=true;tRx=shortestTo(rx,STATES[k].rx);tRy=shortestTo(ry,STATES[k].ry);vx=vy=0;
-    cube.classList.add('has-open');
-    cube.querySelectorAll('.face').forEach(f=>f.classList.toggle('open-face',f.classList.contains(k)));
+    // Hide other faces immediately to prevent bleed-through
+    hideOtherFaces(k);
     const c=cube.querySelector(`[data-cover="${k}"]`);
     if(c)setTimeout(()=>c.classList.add('open'),330);
     setDots();
@@ -224,40 +244,23 @@
   function up(){if(!dragging)return;dragging=false;scene.classList.remove('dragging');
     if(moved<7){const k=nearestFace();if(openFace===k)closeCover();else{closeCover();openAt(k);}}}
 
-  if(window.PointerEvent){
-    scene.addEventListener('pointerdown',e=>{
-      if(e.target.closest('a')) return;
-      scene.setPointerCapture(e.pointerId);
-      down(e.clientX,e.clientY);
-    });
-    scene.addEventListener('pointermove',e=>move(e.clientX,e.clientY));
-    scene.addEventListener('pointerup',e=>{
-      if(e.target.closest('a')) return;
-      up();
-    });
-    scene.addEventListener('pointercancel',up);
-  } else {
-    scene.addEventListener('mousedown',e=>{
-      if(e.target.closest('a')) return;
-      e.preventDefault();
-      down(e.clientX,e.clientY);
-    });
-    window.addEventListener('mousemove',e=>move(e.clientX,e.clientY));
-    window.addEventListener('mouseup',e=>{
-      if(e.target.closest('a')) return;
-      up();
-    });
-    scene.addEventListener('touchstart',e=>{
-      if(e.target.closest('a')) return;
-      const t=e.touches[0];
-      down(t.clientX,t.clientY);
-    },{passive:true});
-    scene.addEventListener('touchmove',e=>{const t=e.touches[0];move(t.clientX,t.clientY);},{passive:true});
-    scene.addEventListener('touchend',e=>{
-      if(e.target.closest('a')) return;
-      up();
-    });
-  }
+  // Use pointer events but do NOT use setPointerCapture — it breaks link click targets
+  scene.addEventListener('pointerdown',e=>{
+    downTarget=e.target;
+    if(e.target.closest('a')) return;
+    e.preventDefault();
+    down(e.clientX,e.clientY);
+  });
+  scene.addEventListener('pointermove',e=>move(e.clientX,e.clientY));
+  scene.addEventListener('pointerup',e=>{
+    // Check the original pointerdown target since capture may redirect e.target
+    if(downTarget&&downTarget.closest('a')){downTarget=null;return;}
+    downTarget=null;
+    up();
+  });
+  scene.addEventListener('pointercancel',()=>{downTarget=null;up();});
+  // Prevent drag-select on the scene
+  scene.addEventListener('selectstart',e=>e.preventDefault());
 
   dotsWrap.addEventListener('click',e=>{const b=e.target.closest('.dot');if(!b)return;
     if(openFace===b.dataset.face){closeCover();return;}closeCover();openAt(b.dataset.face);});
