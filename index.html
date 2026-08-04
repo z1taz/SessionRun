@@ -209,6 +209,7 @@
     if(moved<7){const k=nearestFace();if(openFace===k)closeCover();else{closeCover();openAt(k);}}}
 
   scene.addEventListener('pointerdown',e=>{
+    if(e.target.closest('a')) return; // let link clicks navigate natively, don't hijack them
     try{ scene.setPointerCapture(e.pointerId); }catch(err){}
     down(e.clientX,e.clientY);
   });
@@ -216,10 +217,10 @@
   window.addEventListener('pointerup',up);
   window.addEventListener('pointercancel',up);
   // fallback for browsers with partial pointer-event support
-  scene.addEventListener('mousedown',e=>{ if(!window.PointerEvent){ e.preventDefault(); down(e.clientX,e.clientY); } });
+  scene.addEventListener('mousedown',e=>{ if(!window.PointerEvent && !e.target.closest('a')){ e.preventDefault(); down(e.clientX,e.clientY); } });
   window.addEventListener('mousemove',e=>{ if(!window.PointerEvent) move(e.clientX,e.clientY); });
   window.addEventListener('mouseup',e=>{ if(!window.PointerEvent) up(); });
-  scene.addEventListener('touchstart',e=>{ if(!window.PointerEvent){ const t=e.touches[0]; down(t.clientX,t.clientY); } },{passive:true});
+  scene.addEventListener('touchstart',e=>{ if(!window.PointerEvent && !e.target.closest('a')){ const t=e.touches[0]; down(t.clientX,t.clientY); } },{passive:true});
   scene.addEventListener('touchmove',e=>{ if(!window.PointerEvent){ const t=e.touches[0]; move(t.clientX,t.clientY); } },{passive:true});
   scene.addEventListener('touchend',e=>{ if(!window.PointerEvent) up(); });
 
