@@ -55,17 +55,17 @@
   .cover,.panel{position:absolute;inset:0;border-radius:18px;overflow:hidden;}
   .panel{background:linear-gradient(155deg,#16103A,#0C0922 70%);box-shadow:inset 0 0 0 1px var(--edge);
     padding:min(5.6vmin,50px);display:flex;flex-direction:column;justify-content:center;gap:18px;
-    visibility:hidden;}
+    visibility:hidden;transform-style:preserve-3d;}
   .face.reveal .panel{visibility:visible;}
-  .panel .step{font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--h2);}
-  .panel h2{font-family:var(--display);font-size:clamp(18px,2.7vmin,29px);font-weight:700;margin:0;color:#fff;letter-spacing:-0.015em;line-height:1.2;}
-  .panel ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;}
+  .panel .step{font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--h2);transform:translateZ(10px);}
+  .panel h2{font-family:var(--display);font-size:clamp(18px,2.7vmin,29px);font-weight:700;margin:0;color:#fff;letter-spacing:-0.015em;line-height:1.2;transform:translateZ(10px);}
+  .panel ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;transform:translateZ(10px);}
   .panel li{font-family:var(--display);font-weight:500;font-size:clamp(12.5px,1.6vmin,16px);color:var(--muted);line-height:1.45;padding-left:16px;position:relative;}
   .panel li::before{content:'';position:absolute;left:0;top:0.62em;width:5px;height:5px;border-radius:50%;background:var(--h3);}
   .panel li strong{color:var(--text);font-weight:600;}
-  .panel a{color:var(--h2);position:relative;z-index:10;pointer-events:auto;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
-  .panel a:hover{color:#fff;}
-  .panel .metrics{display:flex;gap:26px;flex-wrap:wrap;}
+  .panel a{color:var(--h2);position:relative;z-index:20;pointer-events:auto;cursor:pointer;text-decoration:underline;text-underline-offset:3px;transform:translateZ(20px);display:inline-block;}
+  .panel a:hover{color:#fff;transform:translateZ(20px);}
+  .panel .metrics{display:flex;gap:26px;flex-wrap:wrap;transform:translateZ(10px);}
   .panel .metric .n{font-family:var(--display);font-size:clamp(22px,3.4vmin,38px);font-weight:700;color:var(--h4);line-height:1;}
   .panel .metric .l{font-size:10px;color:var(--faint);margin-top:6px;letter-spacing:0.05em;}
 
@@ -150,7 +150,7 @@
   const GRID=9;
   const cube=document.getElementById('cube'),scene=document.getElementById('scene'),dotsWrap=document.getElementById('dots');
 
-  // Track which element was under the pointer at pointerdown (before capture steals target)
+  // Track which element was under the pointer at pointerdown
   let downTarget=null;
 
   FACES.forEach(f=>{
@@ -161,13 +161,10 @@
     panel.innerHTML=`<div class="step">${f.step}</div><h2>${f.h}</h2><ul>${f.items.map(i=>`<li>${i}</li>`).join('')}</ul>${m}`;
     face.appendChild(panel);
 
-    // Make links inside panels stop propagation so the cube drag logic never fires
-    panel.querySelectorAll('a').forEach(a=>{
-      a.addEventListener('pointerdown',e=>e.stopPropagation());
-      a.addEventListener('mousedown',e=>e.stopPropagation());
-      a.addEventListener('touchstart',e=>e.stopPropagation());
-      a.addEventListener('click',e=>e.stopPropagation());
-    });
+    // Stop propagation on panel so mouse movements/clicks inside panel never trigger cube drag
+    panel.addEventListener('pointerdown',e=>e.stopPropagation());
+    panel.addEventListener('mousedown',e=>e.stopPropagation());
+    panel.addEventListener('touchstart',e=>e.stopPropagation());
 
     const cover=document.createElement('div');cover.className='cover';cover.dataset.cover=f.key;
     const heat=document.createElement('div');heat.className='heat';
@@ -223,12 +220,10 @@
     if(dx+dy<bs){bs=dx+dy;b=k;}}return b;}
   function openAt(k){
     openFace=k;snapping=true;tRx=shortestTo(rx,STATES[k].rx);tRy=shortestTo(ry,STATES[k].ry);vx=vy=0;
-    // Hide other faces immediately to prevent bleed-through
     hideOtherFaces(k);
     const c=cube.querySelector(`[data-cover="${k}"]`);
     if(c)setTimeout(()=>{
       c.classList.add('open');
-      // Reveal the panel content now that the cover is flipping
       const face=cube.querySelector(`.face.${k}`);
       if(face)face.classList.add('reveal');
     },330);
@@ -254,22 +249,19 @@
   function up(){if(!dragging)return;dragging=false;scene.classList.remove('dragging');
     if(moved<7){const k=nearestFace();if(openFace===k)closeCover();else{closeCover();openAt(k);}}}
 
-  // Use pointer events but do NOT use setPointerCapture — it breaks link click targets
   scene.addEventListener('pointerdown',e=>{
     downTarget=e.target;
-    if(e.target.closest('a')) return;
+    if(e.target.closest('a') || e.target.closest('.panel')) return;
     e.preventDefault();
     down(e.clientX,e.clientY);
   });
   scene.addEventListener('pointermove',e=>move(e.clientX,e.clientY));
   scene.addEventListener('pointerup',e=>{
-    // Check the original pointerdown target since capture may redirect e.target
-    if(downTarget&&downTarget.closest('a')){downTarget=null;return;}
+    if(downTarget && (downTarget.closest('a') || downTarget.closest('.panel'))){downTarget=null;return;}
     downTarget=null;
     up();
   });
   scene.addEventListener('pointercancel',()=>{downTarget=null;up();});
-  // Prevent drag-select on the scene
   scene.addEventListener('selectstart',e=>e.preventDefault());
 
   dotsWrap.addEventListener('click',e=>{const b=e.target.closest('.dot');if(!b)return;
