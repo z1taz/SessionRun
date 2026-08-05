@@ -1,4 +1,4 @@
-# SessionRun
+# SessionRun (Portfolio)
 
 A shared real-time dashboard view for monitoring, intervening, and collaborating on long-running AI agent runs.
 
