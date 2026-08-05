@@ -88,7 +88,7 @@
 <body>
   <div class="aura"></div>
   <div class="corner tl"><div class="kicker">Product &amp; design engineer</div><div class="name">Ziya M Soudagar</div></div>
-  <div class="corner tr"><div class="role-tag">Founding Design Engineer — application</div></div>
+  <div class="corner tr"><div class="role-tag">Open to Product &amp; Engineering roles</div></div>
   <div class="corner bl"><div class="hint-line"><b>drag</b> to spin · <b>click</b> a face to open</div></div>
   <div class="stage"><div class="scene" id="scene"><div class="cube" id="cube"></div></div></div>
   <div class="dots" id="dots"></div>
@@ -102,14 +102,22 @@
             '70%, 80%, 100% of the manual checking &mdash; gone, across four builds.',
             'I care what happens when it is slow, empty, or wrong.']},
 
-    {key:'right',num:'02',nav:'live demo',tag:'An agent, watched live.',step:'Live prototype &mdash; React, no bundler by design',
+    {key:'right',num:'02',nav:'sessions--live demo',tag:'An agent, watched live.',step:'Live prototype &mdash; React, no bundler by design',
      h:'An AI works through a task while you watch it.',
      items:['Steps stream in one by one, live. It <strong>stops itself</strong> before anything other people would see.',
             'You approve or decline that step. Teammates can join mid-run. Full keyboard flow.',
             '<strong>The call:</strong> it almost asked before every action. Cut back to only the one that could not be undone &mdash; anything less and nobody would trust it, anything more and nobody would use it.',
             '<a href="session.html">Open the prototype &rarr;</a>']},
 
-    {key:'back',num:'03',nav:'pressure mat',tag:'A pressure mat, made trustworthy.',step:'Pressure-mat prototype',
+    {key:'back',num:'03',nav:'finsight ai',tag:'A fraud-analytics platform, built alone.',step:'Built solo',
+     h:'FinSight AI catches what a category label hides.',
+     items:['Designed the full system architecture and product logic myself, then used Cursor and GPT to implement and iterate across the backend, API, and dashboard layers &mdash; significantly faster than manual coding alone.',
+            'Flags high-risk transactions in real time using merchant verification, ISO merchant category codes, and an instant-flag rule, alongside dashboards for spending, income, and anomaly trends.',
+            '<strong>Proof:</strong> a $5,000 charge filed under &ldquo;Other&rdquo; from an unverified merchant &mdash; caught instantly at a 96% fraud score.',
+            '<a href="https://github.com/z1taz/FINSIGHTAI" target="_blank" rel="noopener">View the code &rarr;</a> &nbsp;&middot;&nbsp; <a href="finsight-demo.html">Try it live &rarr;</a>'],
+     metrics:[['96%','fraud score flagged'],['real-time','detection']]},
+
+    {key:'left',num:'04',nav:'pressure mat',tag:'A pressure mat, made trustworthy.',step:'Pressure-mat prototype',
      h:'A floor sensor read 225 times a second &mdash; every reading has to be right.',
      items:['A pressure-sensing mat streaming <strong>225 channels</strong> continuously into a live dashboard.',
             'Used with children with cerebral palsy in a hospital.',
@@ -117,19 +125,12 @@
             '<strong>The call:</strong> flagging every noisy reading would have buried the real ones. A bad sensor repeats a pattern; noise does not &mdash; so I validated against that pattern, not a single reading.'],
      metrics:[['225','channels'],['100%','data stability'],['~70%','less manual checking']]},
 
-    {key:'left',num:'04',nav:'built solo',tag:'Dense data, made readable.',step:'Built solo',
-     h:'Two tools, end to end.',
-     items:['<strong>Log Visualizer</strong> &mdash; turns long machine-generated reports into interactive dashboards, scoring each 0&ndash;100 so the worst surfaces first.',
-            '<strong>FinSight AI</strong> &mdash; anomaly detection on transaction data, with dashboards surfacing what looks wrong. Python, FastAPI, PostgreSQL.',
-            '<strong>The call:</strong> nobody was going to read the full report. The score had to lead, not the data &mdash; rank by risk first, let people drill into raw detail only if they chose to.',
-            'Designed, built and shipped both alone.'],
-     metrics:[['~80%','less analysis time']]},
-
     {key:'top',num:'05',nav:'stack',tag:'Stack.',step:'Stack',
      h:'What I build in.',
      items:['<strong>React</strong>, HTML, CSS, JavaScript &mdash; interface, state, motion.',
             'Python, FastAPI, SQL, PostgreSQL, Docker, Git.',
-            'Machine learning for real products. Published at <strong>IEEE CONECCT 2026</strong>.']},
+            'Machine learning for real products. Published at <strong>IEEE CONECCT 2026</strong>.',
+            'Also built a <strong>Log Visualizer</strong> that turns dense synthesis reports into scored, interactive dashboards.']},
 
     {key:'bottom',num:'06',nav:'contact',tag:'Say hello.',step:'Contact',
      h:'Get in touch.',
