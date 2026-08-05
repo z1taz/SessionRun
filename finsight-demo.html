@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FinSight AI &mdash; Fraud Detection Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#07060F;
+    --panel:#16103A;
+    --panel2:#0C0922;
+    --edge:rgba(140,120,255,0.26);
+    --h1:#2B3BD6;--h2:#00CFE8;--h3:#FFB020;--h4:#FF3D6E;
+    --ok:#10b981;
+    --text:#EFEBFF;--muted:#9A93C4;--faint:#5D5688;
+    --display:'Space Grotesk',sans-serif;--mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;min-height:100%;background:var(--void);}
+  body{font-family:var(--mono);color:var(--text);-webkit-font-smoothing:antialiased;padding:40px 20px 80px;}
+  .aura{position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(42vmax 42vmax at 22% 18%,rgba(43,59,214,0.22),transparent 60%),
+               radial-gradient(38vmax 38vmax at 80% 78%,rgba(255,61,110,0.13),transparent 60%);}
+  .wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;}
+
+  .back{display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:12px;margin-bottom:28px;}
+  .back:hover{color:var(--text);}
+
+  .kicker{font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--h2);margin-bottom:8px;}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);margin:0 0 10px;color:#fff;letter-spacing:-0.015em;}
+  .sub{color:var(--muted);font-size:14px;line-height:1.6;margin:0 0 34px;max-width:60ch;}
+  .sub b{color:var(--text);font-weight:500;}
+
+  .card{background:linear-gradient(155deg,var(--panel),var(--panel2) 70%);border-radius:16px;
+    box-shadow:inset 0 0 0 1px var(--edge);padding:28px;margin-bottom:20px;}
+  .card h2{font-family:var(--display);font-size:16px;font-weight:700;color:#fff;margin:0 0 18px;}
+
+  .row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+  .field{flex:1;min-width:180px;display:flex;flex-direction:column;gap:6px;}
+  label{font-size:11px;color:var(--faint);letter-spacing:0.04em;text-transform:uppercase;}
+  input[type=number], select{
+    background:var(--void);color:var(--text);border:1px solid var(--edge);border-radius:9px;
+    padding:10px 12px;font-family:var(--mono);font-size:14px;outline:none;}
+  input[type=number]:focus, select:focus{border-color:var(--h2);}
+  .toggle-row{display:flex;align-items:center;gap:10px;margin-top:4px;}
+  .toggle{position:relative;width:42px;height:24px;background:var(--void);border:1px solid var(--edge);
+    border-radius:20px;cursor:pointer;flex-shrink:0;}
+  .toggle .knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:var(--faint);transition:transform 160ms, background 160ms;}
+  .toggle.on{border-color:var(--ok);}
+  .toggle.on .knob{transform:translateX(18px);background:var(--ok);}
+  .toggle-label{font-size:13px;color:var(--muted);}
+
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .preset-btn{font-family:var(--mono);font-size:11.5px;color:var(--muted);background:rgba(255,255,255,0.03);
+    border:1px solid var(--edge);border-radius:20px;padding:6px 13px;cursor:pointer;}
+  .preset-btn:hover{color:var(--text);border-color:var(--h2);}
+
+  .check-btn{width:100%;background:var(--h2);color:#062B1A;font-family:var(--display);font-weight:700;
+    font-size:14px;border:none;border-radius:10px;padding:13px;cursor:pointer;letter-spacing:0.01em;}
+  .check-btn:hover{filter:brightness(1.08);}
+
+  .result{margin-top:22px;border-radius:12px;padding:18px 20px;display:none;}
+  .result.show{display:block;}
+  .result.flagged{background:rgba(255,61,110,0.08);border:1px solid rgba(255,61,110,0.35);}
+  .result.clear{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.35);}
+  .result-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+  .result-tag{font-family:var(--display);font-weight:700;font-size:15px;}
+  .result.flagged .result-tag{color:var(--h4);}
+  .result.clear .result-tag{color:var(--ok);}
+  .result-score{font-family:var(--display);font-weight:700;font-size:22px;color:#fff;}
+  .factors{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+  .factor{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);
+    padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .factor:last-child{border-bottom:none;}
+  .factor b{color:var(--text);font-weight:500;}
+  .factor .plus{color:var(--h3);}
+
+  .note{margin-top:26px;font-size:12px;color:var(--faint);line-height:1.7;}
+  .note code{background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:4px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="aura"></div>
+<div class="wrap">
+
+  <a class="back" href="/">&larr; back to portfolio</a>
+
+  <div class="kicker">Interactive demo &mdash; real scoring logic, client-side</div>
+  <h1>Would this transaction get flagged?</h1>
+  <p class="sub">This runs the <b>same weighted risk-scoring algorithm</b> as FinSight AI's backend &mdash; merchant
+    verification, MCC risk, category risk, and income ratio &mdash; computed live in your browser. Try the presets,
+    or build your own transaction below.</p>
+
+  <div class="card">
+    <h2>Build a transaction</h2>
+
+    <div class="presets">
+      <button class="preset-btn" data-preset="flag">$5,000 &middot; Other &middot; unverified</button>
+      <button class="preset-btn" data-preset="clear">$2,000 &middot; Shopping &middot; verified</button>
+      <button class="preset-btn" data-preset="borderline">&#8377;2,50,000 &middot; Shopping &middot; verified</button>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Amount (&#8377;)</label>
+        <input type="number" id="amount" value="5000" min="0" step="50">
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <select id="category">
+          <option>Groceries</option>
+          <option>Dining Out</option>
+          <option>Utilities</option>
+          <option>Rent/Mortgage</option>
+          <option>Entertainment</option>
+          <option>Shopping</option>
+          <option>Travel</option>
+          <option>Wire Transfer</option>
+          <option>Investment</option>
+          <option selected>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Merchant category code (MCC)</label>
+        <select id="mcc">
+          <option value="5411">5411 &mdash; Grocery</option>
+          <option value="5814">5814 &mdash; Fast food</option>
+          <option value="4899">4899 &mdash; Utilities</option>
+          <option value="6513">6513 &mdash; Rent</option>
+          <option value="7832">7832 &mdash; Entertainment</option>
+          <option value="5311">5311 &mdash; Department store</option>
+          <option value="4121">4121 &mdash; Rideshare</option>
+          <option value="6012">6012 &mdash; Wire transfer</option>
+          <option value="7995">7995 &mdash; Gambling</option>
+          <option value="6051">6051 &mdash; Crypto</option>
+          <option value="5999">5999 &mdash; General retail</option>
+          <option value="0000" selected>0000 &mdash; Unclassified gateway</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Merchant status</label>
+        <div class="toggle-row">
+          <div class="toggle" id="verified-toggle"><div class="knob"></div></div>
+          <span class="toggle-label" id="verified-label">Unverified merchant</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="check-btn" id="check-btn">Check transaction</button>
+
+    <div class="result" id="result">
+      <div class="result-top">
+        <span class="result-tag" id="result-tag"></span>
+        <span class="result-score" id="result-score"></span>
+      </div>
+      <div class="factors" id="factors"></div>
+    </div>
+  </div>
+
+  <p class="note">Ported directly from <code>fraud_detector.py</code>: unverified merchant +0.40, high-risk MCC
+    +0.35, high-risk category +0.15, income ratio up to +0.25 &mdash; flagged at &ge;0.50. The backend's Isolation
+    Forest model handles subtler cases beyond these explicit rules; this demo covers the primary rule engine.</p>
+
+</div>
+
+<script>
+(function(){
+  const MCC_RISK = {"5411":0.05,"5814":0.10,"4899":0.02,"6513":0.01,"7832":0.15,"5311":0.25,
+    "4121":0.15,"6012":0.85,"7995":0.90,"6051":0.85,"0000":0.95,"5999":0.20};
+  const HIGH_RISK_MCC = new Set(["7995","6051","6012","0000"]);
+  const HIGH_RISK_CATEGORY = new Set(["Wire Transfer","Gambling","Betting"]);
+  const MONTHLY_INCOME_BASELINE = 400000;
+
+  const amountEl = document.getElementById('amount');
+  const categoryEl = document.getElementById('category');
+  const mccEl = document.getElementById('mcc');
+  const toggleEl = document.getElementById('verified-toggle');
+  const toggleLabelEl = document.getElementById('verified-label');
+  const resultEl = document.getElementById('result');
+  const resultTagEl = document.getElementById('result-tag');
+  const resultScoreEl = document.getElementById('result-score');
+  const factorsEl = document.getElementById('factors');
+
+  let verified = false;
+
+  toggleEl.addEventListener('click', function(){
+    verified = !verified;
+    toggleEl.classList.toggle('on', verified);
+    toggleLabelEl.textContent = verified ? 'Verified merchant' : 'Unverified merchant';
+  });
+
+  const PRESETS = {
+    flag:      { amount: 5000,  category: 'Other',    mcc: '0000', verified: false },
+    clear:     { amount: 2000,  category: 'Shopping', mcc: '5311', verified: true  },
+    borderline:{ amount: 250000, category: 'Shopping', mcc: '5311', verified: true  }
+  };
+
+  document.querySelectorAll('.preset-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const p = PRESETS[btn.dataset.preset];
+      amountEl.value = p.amount;
+      categoryEl.value = p.category;
+      mccEl.value = p.mcc;
+      verified = p.verified;
+      toggleEl.classList.toggle('on', verified);
+      toggleLabelEl.textContent = verified ? 'Verified merchant' : 'Unverified merchant';
+      score();
+    });
+  });
+
+  function score(){
+    const amount = parseFloat(amountEl.value) || 0;
+    const category = categoryEl.value;
+    const mcc = mccEl.value;
+    const incomeRatio = amount / MONTHLY_INCOME_BASELINE;
+
+    let risk = 0;
+    const factors = [];
+
+    if (!verified) {
+      risk += 0.40;
+      factors.push(['Unverified merchant entity', '+0.40']);
+    }
+    if (HIGH_RISK_MCC.has(mcc)) {
+      risk += 0.35;
+      factors.push(['High-risk MCC (' + mcc + ')', '+0.35']);
+    }
+    if (HIGH_RISK_CATEGORY.has(category)) {
+      risk += 0.15;
+      factors.push(['High-risk category (' + category + ')', '+0.15']);
+    }
+    let incomeAdd = 0;
+    if (incomeRatio >= 0.80) incomeAdd = 0.25;
+    else if (incomeRatio >= 0.50) incomeAdd = 0.15;
+    else if (incomeRatio >= 0.30) incomeAdd = 0.08;
+    if (incomeAdd > 0) {
+      risk += incomeAdd;
+      factors.push(['Income ratio ' + (incomeRatio*100).toFixed(0) + '% of monthly baseline', '+' + incomeAdd.toFixed(2)]);
+    }
+
+    if (factors.length === 0) {
+      factors.push(['No risk factors triggered', '+0.00']);
+    }
+
+    const flagged = risk >= 0.50;
+    const finalScore = flagged ? Math.min(0.50 + (risk - 0.50) * 1.5, 0.96) : risk;
+
+    resultEl.classList.remove('flagged','clear');
+    resultEl.classList.add('show', flagged ? 'flagged' : 'clear');
+    resultTagEl.textContent = flagged ? '\uD83D\uDEA8 Flagged as anomaly' : '\u2713 Not flagged';
+    resultScoreEl.textContent = (finalScore*100).toFixed(1) + '%';
+
+    factorsEl.innerHTML = factors.map(function(f){
+      return '<div class="factor"><span>' + f[0] + '</span><b class="plus">' + f[1] + '</b></div>';
+    }).join('');
+  }
+
+  document.getElementById('check-btn').addEventListener('click', score);
+  score();
+})();
+</script>
+</body>
+</html>
