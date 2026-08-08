@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Ziya M Soudagar</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
@@ -24,7 +25,9 @@
     --size:min(62vmin,660px);
   }
 
-  *{box-sizing:border-box;}
+  *{
+    box-sizing:border-box;
+  }
 
   html,body{
     margin:0;
@@ -49,8 +52,16 @@
     pointer-events:none;
     z-index:0;
     background:
-      radial-gradient(42vmax 42vmax at 28% 24%,rgba(43,59,214,0.30),transparent 64%),
-      radial-gradient(38vmax 38vmax at 74% 74%,rgba(255,61,110,0.17),transparent 64%);
+      radial-gradient(
+        42vmax 42vmax at 28% 24%,
+        rgba(43,59,214,0.30),
+        transparent 64%
+      ),
+      radial-gradient(
+        38vmax 38vmax at 74% 74%,
+        rgba(255,61,110,0.17),
+        transparent 64%
+      );
   }
 
   .corner{
@@ -180,9 +191,16 @@
   }
 
   .panel{
-    background:linear-gradient(155deg,#16103A,#0C0922 70%);
+    background:linear-gradient(
+      155deg,
+      #16103A,
+      #0C0922 70%
+    );
+
     box-shadow:inset 0 0 0 1px var(--edge);
+
     padding:min(5.6vmin,50px);
+
     display:flex;
     flex-direction:column;
     justify-content:center;
@@ -266,14 +284,73 @@
     letter-spacing:0.05em;
   }
 
+  /*
+    FINsight-specific compact layout.
+    The content stays exactly the same;
+    only spacing and typography are reduced
+    so the complete case study fits inside
+    the fixed cube face.
+  */
+
+  .panel-finSight{
+    padding:min(4.1vmin,34px);
+    gap:10px;
+  }
+
+  .panel-finSight .step{
+    font-size:9.5px;
+    letter-spacing:0.13em;
+  }
+
+  .panel-finSight h2{
+    font-size:clamp(17px,2.25vmin,25px);
+    line-height:1.14;
+    letter-spacing:-0.018em;
+  }
+
+  .panel-finSight ul{
+    gap:6px;
+  }
+
+  .panel-finSight li{
+    font-size:clamp(10.5px,1.27vmin,13.5px);
+    line-height:1.27;
+    padding-left:14px;
+  }
+
+  .panel-finSight li::before{
+    width:4px;
+    height:4px;
+    top:0.62em;
+  }
+
+  .panel-finSight .metrics{
+    gap:20px;
+    padding-top:2px;
+  }
+
+  .panel-finSight .metric .n{
+    font-size:clamp(20px,3vmin,32px);
+  }
+
+  .panel-finSight .metric .l{
+    font-size:9px;
+    margin-top:4px;
+    line-height:1.15;
+  }
+
   .cover{
     background:var(--glass);
     box-shadow:
       inset 0 0 0 1px var(--edge),
       0 18px 60px rgba(0,0,0,0.6);
+
     transform-origin:left center;
     transform:rotateY(0deg);
-    transition:transform 620ms cubic-bezier(.34,.9,.28,1);
+
+    transition:
+      transform 620ms cubic-bezier(.34,.9,.28,1);
+
     backface-visibility:hidden;
     cursor:pointer;
   }
@@ -296,17 +373,24 @@
   }
 
   @keyframes breathe{
-    0%,100%{opacity:var(--o);}
-    50%{opacity:calc(var(--o)*0.4);}
+    0%,100%{
+      opacity:var(--o);
+    }
+
+    50%{
+      opacity:calc(var(--o)*0.4);
+    }
   }
 
   .cover-ui{
     position:absolute;
     inset:0;
     padding:min(5.6vmin,50px);
+
     display:flex;
     flex-direction:column;
     justify-content:space-between;
+
     background:linear-gradient(
       180deg,
       rgba(9,7,24,0.48),
@@ -343,8 +427,10 @@
     left:50%;
     transform:translateX(-50%);
     z-index:6;
+
     display:flex;
     gap:6px;
+
     background:rgba(10,8,26,0.85);
     padding:7px;
     border-radius:26px;
@@ -360,7 +446,9 @@
     padding:6px 13px;
     border-radius:20px;
     cursor:pointer;
-    transition:color 160ms,background 160ms;
+    transition:
+      color 160ms,
+      background 160ms;
   }
 
   .dot:hover{
@@ -374,8 +462,13 @@
   }
 
   @media (prefers-reduced-motion:reduce){
-    .cell{animation:none;}
-    .cover{transition:none;}
+    .cell{
+      animation:none;
+    }
+
+    .cover{
+      transition:none;
+    }
   }
 
   @media (max-width:700px){
@@ -385,6 +478,20 @@
 
     .corner.tr{
       display:none;
+    }
+
+    .panel-finSight{
+      padding:24px;
+      gap:8px;
+    }
+
+    .panel-finSight h2{
+      font-size:17px;
+    }
+
+    .panel-finSight li{
+      font-size:11px;
+      line-height:1.25;
     }
   }
 </style>
@@ -400,7 +507,9 @@
   </div>
 
   <div class="corner tr">
-    <div class="role-tag">Open to Product, Design &amp; AI-native roles</div>
+    <div class="role-tag">
+      Open to Product, Design &amp; AI-native roles
+    </div>
   </div>
 
   <div class="corner bl">
@@ -442,7 +551,9 @@
       nav:'finsight ai',
       tag:'A fraud platform I built, then taught to explain itself.',
       step:'Built solo &mdash; then extended with an AI agent',
+
       h:'FinSight AI doesn&rsquo;t just flag fraud. It explains itself &mdash; and knows when to stay quiet.',
+
       items:[
         'Designed the full system architecture and product logic myself &mdash; a hybrid detector blending a weighted rule engine (merchant verification, MCC risk codes, category risk, income ratio) with an Isolation Forest model. No single signal can flag a transaction; it always takes two or more.',
 
@@ -454,6 +565,7 @@
 
         '<a href="https://github.com/z1taz/FINSIGHTAI" target="_blank" rel="noopener">View the code &rarr;</a> &nbsp;&middot;&nbsp; <a href="https://finsight-frontend-7awr.onrender.com" target="_blank" rel="noopener">Try it live &rarr;</a>'
       ],
+
       metrics:[
         ['100%','precision &amp; recall on test data'],
         ['96%','risk score on proof case'],
@@ -468,7 +580,9 @@
       nav:'sessions--live demo',
       tag:'An agent, watched live.',
       step:'Live prototype &mdash; React, no bundler by design',
+
       h:'An AI works through a task while you watch it.',
+
       items:[
         'Steps stream in one by one, live. It <strong>stops itself</strong> before anything other people would see.',
         'You approve or decline that step. Teammates can join mid-run. Full keyboard flow.',
@@ -484,13 +598,16 @@
       nav:'pressure mat',
       tag:'A pressure mat, made trustworthy.',
       step:'Pressure-mat prototype',
+
       h:'A floor sensor read 225 times a second &mdash; every reading has to be right.',
+
       items:[
         'A pressure-sensing mat streaming <strong>225 channels</strong> continuously into a live dashboard.',
         'Used with children with cerebral palsy in a hospital.',
         'Bad readings look identical to real ones. I built the validation that caught them before the screen did.',
         '<strong>The call:</strong> flagging every noisy reading would have buried the real ones. A bad sensor repeats a pattern; noise does not &mdash; so I validated against that pattern, not a single reading.'
       ],
+
       metrics:[
         ['225','channels'],
         ['100%','data stability'],
@@ -505,7 +622,9 @@
       nav:'stack',
       tag:'Stack.',
       step:'Stack',
+
       h:'What I build in.',
+
       items:[
         '<strong>React</strong>, HTML, CSS, JavaScript &mdash; interface, state, motion.',
         'Python, FastAPI, SQL, PostgreSQL, Docker, Git.',
@@ -521,7 +640,9 @@
       nav:'contact',
       tag:'Say hello.',
       step:'Contact',
+
       h:'Get in touch.',
+
       items:[
         'ziyasoudagar03@gmail.com',
         '<a href="https://github.com/z1taz">github.com/z1taz</a>',
@@ -541,6 +662,7 @@
     bottom:{rx:90,ry:0}
   };
 
+
   const HEAT=[
     'var(--h1)',
     'var(--h1)',
@@ -550,7 +672,9 @@
     'var(--h4)'
   ];
 
+
   const GRID=9;
+
 
   const cube=document.getElementById('cube');
   const scene=document.getElementById('scene');
@@ -562,21 +686,36 @@
     const face=document.createElement('div');
     face.className='face '+f.key;
 
+
     const panel=document.createElement('div');
-    panel.className='panel';
+
+    /*
+      Only the back/FinSight face gets the
+      compact typography defined above.
+      All other faces remain unchanged.
+    */
+    panel.className=
+      'panel' +
+      (f.key==='back' ? ' panel-finSight' : '');
+
 
     let m='';
 
+
     if(f.metrics){
-      m='<div class="metrics">'+
+
+      m=
+        '<div class="metrics">'+
         f.metrics.map(x=>
           `<div class="metric">
             <div class="n">${x[0]}</div>
             <div class="l">${x[1]}</div>
           </div>`
         ).join('')+
-      '</div>';
+        '</div>';
+
     }
+
 
     panel.innerHTML=
       `<div class="step">${f.step}</div>
@@ -584,52 +723,79 @@
        <ul>${f.items.map(i=>`<li>${i}</li>`).join('')}</ul>
        ${m}`;
 
+
     face.appendChild(panel);
 
 
     const cover=document.createElement('div');
+
     cover.className='cover';
     cover.dataset.cover=f.key;
 
+
     const heat=document.createElement('div');
+
     heat.className='heat';
 
-    heat.style.gridTemplateColumns=`repeat(${GRID},1fr)`;
-    heat.style.gridTemplateRows=`repeat(${GRID},1fr)`;
+    heat.style.gridTemplateColumns=
+      `repeat(${GRID},1fr)`;
+
+    heat.style.gridTemplateRows=
+      `repeat(${GRID},1fr)`;
 
 
     for(let i=0;i<GRID*GRID;i++){
 
       const c=document.createElement('div');
+
       c.className='cell';
+
 
       const col=i%GRID;
       const row=Math.floor(i/GRID);
 
+
       const cx=(col-GRID/2)/GRID;
       const cy=(row-GRID/2)/GRID;
 
-      const d=Math.sqrt(cx*cx+cy*cy);
+
+      const d=Math.sqrt(
+        cx*cx+cy*cy
+      );
+
 
       const idx=Math.max(
         0,
         Math.min(
           HEAT.length-1,
-          Math.floor((1-d*1.6)*HEAT.length)
+          Math.floor(
+            (1-d*1.6)*HEAT.length
+          )
         )
       );
 
+
       c.style.background=HEAT[idx];
+
 
       c.style.setProperty(
         '--o',
-        (0.16+Math.max(0,(1-d*1.7))*0.55).toFixed(3)
+        (
+          0.16+
+          Math.max(
+            0,
+            (1-d*1.7)
+          )*0.55
+        ).toFixed(3)
       );
+
 
       c.style.animationDelay=
         (Math.random()*4.5).toFixed(2)+'s';
 
+
       heat.appendChild(c);
+
     }
 
 
@@ -637,6 +803,7 @@
 
 
     const ui=document.createElement('div');
+
     ui.className='cover-ui';
 
     ui.innerHTML=
@@ -644,18 +811,24 @@
         <div class="num">${f.num}</div>
         <div class="tag">${f.tag}</div>
       </div>
-      <div class="open-hint">click to open &rarr;</div>`;
+      <div class="open-hint">
+        click to open &rarr;
+      </div>`;
+
 
     cover.appendChild(ui);
 
     face.appendChild(cover);
+
     cube.appendChild(face);
 
 
     const dot=document.createElement('button');
 
     dot.className='dot';
+
     dot.dataset.face=f.key;
+
     dot.textContent=f.nav;
 
     dotsWrap.appendChild(dot);
@@ -663,33 +836,44 @@
   });
 
 
-  let rx=-14,
-      ry=-22,
-      vx=0,
-      vy=0.13;
+  let rx=-14;
+  let ry=-22;
 
-  let dragging=false,
-      sx=0,
-      sy=0,
-      srx=0,
-      sry=0,
-      moved=0,
-      lastX=0,
-      lastY=0;
+  let vx=0;
+  let vy=0.13;
 
-  let openFace=null,
-      snapping=false,
-      tRx=0,
-      tRy=0;
+
+  let dragging=false;
+
+  let sx=0;
+  let sy=0;
+
+  let srx=0;
+  let sry=0;
+
+  let moved=0;
+
+  let lastX=0;
+  let lastY=0;
+
+
+  let openFace=null;
+
+  let snapping=false;
+
+  let tRx=0;
+  let tRy=0;
 
 
   function setDots(){
 
     [...dotsWrap.children].forEach(d=>
+
       d.classList.toggle(
         'active',
         d.dataset.face===openFace
       )
+
     );
 
   }
@@ -699,14 +883,19 @@
 
     if(!openFace)return;
 
+
     const c=
       cube.querySelector(
         `[data-cover="${openFace}"]`
       );
 
-    if(c)c.classList.remove('open');
+
+    if(c)
+      c.classList.remove('open');
+
 
     openFace=null;
+
     snapping=false;
 
     setDots();
@@ -716,36 +905,44 @@
 
   function shortestTo(a,t){
 
-    return a+((((t-a)+540)%360)-180);
+    return a+
+      ((((t-a)+540)%360)-180);
 
   }
 
 
   function nearestFace(){
 
-    let b='front',
-        bs=Infinity;
+    let b='front';
+    let bs=Infinity;
+
 
     for(const k in STATES){
 
       const s=STATES[k];
+
 
       const dx=
         Math.abs(
           (((rx-s.rx)+540)%360)-180
         );
 
+
       const dy=
         Math.abs(
           (((ry-s.ry)+540)%360)-180
         );
 
+
       if(dx+dy<bs){
+
         bs=dx+dy;
         b=k;
+
       }
 
     }
+
 
     return b;
 
@@ -755,30 +952,42 @@
   function openAt(k){
 
     openFace=k;
+
     snapping=true;
 
-    tRx=shortestTo(
-      rx,
-      STATES[k].rx
-    );
 
-    tRy=shortestTo(
-      ry,
-      STATES[k].ry
-    );
+    tRx=
+      shortestTo(
+        rx,
+        STATES[k].rx
+      );
+
+
+    tRy=
+      shortestTo(
+        ry,
+        STATES[k].ry
+      );
+
 
     vx=vy=0;
+
 
     const c=
       cube.querySelector(
         `[data-cover="${k}"]`
       );
 
-    if(c)
+
+    if(c){
+
       setTimeout(
         ()=>c.classList.add('open'),
         330
       );
+
+    }
+
 
     setDots();
 
@@ -794,6 +1003,7 @@
         rx+=(tRx-rx)*0.14;
         ry+=(tRy-ry)*0.14;
 
+
         if(
           Math.abs(tRx-rx)<0.05 &&
           Math.abs(tRy-ry)<0.05
@@ -801,6 +1011,7 @@
 
           rx=tRx;
           ry=tRy;
+
           snapping=false;
 
         }
@@ -812,23 +1023,31 @@
         rx+=vx;
         ry+=vy;
 
+
         vx*=0.96;
         vy*=0.96;
+
 
         if(Math.abs(vy)<0.06)
           vy+=(0.11-vy)*0.02;
 
+
         rx=Math.max(
           -72,
-          Math.min(72,rx)
+          Math.min(
+            72,
+            rx
+          )
         );
 
       }
 
     }
 
+
     cube.style.transform=
       `rotateX(${rx}deg) rotateY(${ry}deg)`;
+
 
     requestAnimationFrame(frame);
 
@@ -838,17 +1057,24 @@
   function down(x,y){
 
     dragging=true;
+
     moved=0;
+
 
     sx=lastX=x;
     sy=lastY=y;
 
+
     srx=rx;
     sry=ry;
 
+
     snapping=false;
 
-    scene.classList.add('dragging');
+
+    scene.classList.add(
+      'dragging'
+    );
 
   }
 
@@ -857,12 +1083,19 @@
 
     if(!dragging)return;
 
+
     const dx=x-sx;
     const dy=y-sy;
 
-    moved=Math.hypot(dx,dy);
+
+    moved=Math.hypot(
+      dx,
+      dy
+    );
+
 
     ry=sry+dx*0.5;
+
 
     rx=Math.max(
       -72,
@@ -872,11 +1105,15 @@
       )
     );
 
+
     vx=-(y-lastY)*0.11;
+
     vy=(x-lastX)*0.11;
+
 
     lastX=x;
     lastY=y;
+
 
     if(moved>8&&openFace)
       closeCover();
@@ -888,19 +1125,27 @@
 
     if(!dragging)return;
 
+
     dragging=false;
 
-    scene.classList.remove('dragging');
+
+    scene.classList.remove(
+      'dragging'
+    );
+
 
     if(moved<7){
 
       const k=nearestFace();
 
+
       if(openFace===k){
 
         closeCover();
 
-      }else{
+      }
+
+      else{
 
         closeCover();
         openAt(k);
@@ -916,11 +1161,17 @@
     'pointerdown',
     e=>{
 
-      if(e.target.closest('a'))return;
+      if(e.target.closest('a'))
+        return;
+
 
       try{
-        scene.setPointerCapture(e.pointerId);
-      }catch(err){}
+        scene.setPointerCapture(
+          e.pointerId
+        );
+      }
+      catch(err){}
+
 
       down(
         e.clientX,
@@ -964,6 +1215,7 @@
 
         e.preventDefault();
 
+
         down(
           e.clientX,
           e.clientY
@@ -979,11 +1231,14 @@
     'mousemove',
     e=>{
 
-      if(!window.PointerEvent)
+      if(!window.PointerEvent){
+
         move(
           e.clientX,
           e.clientY
         );
+
+      }
 
     }
   );
@@ -1011,6 +1266,7 @@
 
         const t=e.touches[0];
 
+
         down(
           t.clientX,
           t.clientY
@@ -1030,6 +1286,7 @@
       if(!window.PointerEvent){
 
         const t=e.touches[0];
+
 
         move(
           t.clientX,
@@ -1058,19 +1315,30 @@
     'click',
     e=>{
 
-      const b=e.target.closest('.dot');
+      const b=
+        e.target.closest('.dot');
+
 
       if(!b)return;
 
-      if(openFace===b.dataset.face){
+
+      if(
+        openFace===
+        b.dataset.face
+      ){
 
         closeCover();
+
         return;
 
       }
 
+
       closeCover();
-      openAt(b.dataset.face);
+
+      openAt(
+        b.dataset.face
+      );
 
     }
   );
