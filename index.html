@@ -88,7 +88,7 @@
 <body>
   <div class="aura"></div>
   <div class="corner tl"><div class="kicker">Product &amp; design engineer</div><div class="name">Ziya M Soudagar</div></div>
-  <div class="corner tr"><div class="role-tag">Open to Product &amp; Engineering roles</div></div>
+  <div class="corner tr"><div class="role-tag">Open to Product &amp; Design roles</div></div>
   <div class="corner bl"><div class="hint-line"><b>drag</b> to spin · <b>click</b> a face to open</div></div>
   <div class="stage"><div class="scene" id="scene"><div class="cube" id="cube"></div></div></div>
   <div class="dots" id="dots"></div>
@@ -96,26 +96,27 @@
 <script>
 (function(){
   const FACES=[
-    {key:'front',nav:'start',num:'01',tag:'I kill manual work.',step:'Ziya M Soudagar',
+    {key:'back',num:'01',nav:'finsight ai',tag:'A fraud platform I built, then taught to explain itself.',step:'Built solo &mdash; then extended with an AI agent',
+     h:'FinSight AI doesn&rsquo;t just flag fraud. It explains itself &mdash; and knows when to stay quiet.',
+     items:['Designed the full system architecture and product logic myself &mdash; a hybrid detector blending a weighted rule engine (merchant verification, MCC risk codes, category risk, income ratio) with an Isolation Forest model. No single signal can flag a transaction; it always takes two or more.',
+            'Extended it with a RAG-grounded AI agent that explains every flag in plain language for the analyst reviewing it &mdash; citing only the retrieved policy evidence, and instructed to abstain instead of guessing when that evidence is weak.',
+            '<strong>Proof:</strong> 100% precision and 100% recall against injected fraud cases, verified on the live deployment. A $5,000 charge filed under &ldquo;Other&rdquo; from an unverified merchant &mdash; caught instantly at a 96% risk score.',
+            'Built an 8-case eval harness to test the agent itself &mdash; 4 real multi-factor fraud flags, plus 4 cases engineered to sit just under the real flag threshold, checking whether it stays grounded and knows when not to answer.',
+            '<a href="https://github.com/z1taz/FINSIGHTAI" target="_blank" rel="noopener">View the code &rarr;</a> &nbsp;&middot;&nbsp; <a href="https://finsight-frontend-7awr.onrender.com" target="_blank" rel="noopener">Try it live &rarr;</a>'],
+     metrics:[['100%','precision &amp; recall on test data'],['96%','risk score on proof case'],['8','agent eval-harness cases']]},
+
+    {key:'front',nav:'start',num:'02',tag:'I kill manual work.',step:'Ziya M Soudagar',
      h:'Find the person doing it by hand. Build the thing that stops them.',
      items:['Every tool I have shipped came from watching someone repeat themselves.',
             '70%, 80%, 100% of the manual checking &mdash; gone, across four builds.',
             'I care what happens when it is slow, empty, or wrong.']},
 
-    {key:'right',num:'02',nav:'sessions--live demo',tag:'An agent, watched live.',step:'Live prototype &mdash; React, no bundler by design',
+    {key:'right',num:'03',nav:'sessions--live demo',tag:'An agent, watched live.',step:'Live prototype &mdash; React, no bundler by design',
      h:'An AI works through a task while you watch it.',
      items:['Steps stream in one by one, live. It <strong>stops itself</strong> before anything other people would see.',
             'You approve or decline that step. Teammates can join mid-run. Full keyboard flow.',
             '<strong>The call:</strong> it almost asked before every action. Cut back to only the one that could not be undone &mdash; anything less and nobody would trust it, anything more and nobody would use it.',
             '<a href="session.html">Open the prototype &rarr;</a>']},
-
-    {key:'back',num:'03',nav:'finsight ai',tag:'A fraud-analytics platform, built alone.',step:'Built solo',
-     h:'FinSight AI catches what a category label hides.',
-     items:['Designed the full system architecture and product logic myself, then used Cursor and GPT to implement and iterate across the backend, API, and dashboard layers &mdash; significantly faster than manual coding alone.',
-            'Flags high-risk transactions in real time using merchant verification, ISO merchant category codes, and an instant-flag rule, alongside dashboards for spending, income, and anomaly trends.',
-            '<strong>Proof:</strong> a $5,000 charge filed under &ldquo;Other&rdquo; from an unverified merchant &mdash; caught instantly at a 96% fraud score.',
-            '<a href="https://github.com/z1taz/FINSIGHTAI" target="_blank" rel="noopener">View the code &rarr;</a> &nbsp;&middot;&nbsp; <a href="https://finsight-frontend-7awr.onrender.com" target="_blank" rel="noopener">Try it live &rarr;</a>'],
-     metrics:[['96%','fraud score flagged'],['real-time','detection']]},
 
     {key:'left',num:'04',nav:'pressure mat',tag:'A pressure mat, made trustworthy.',step:'Pressure-mat prototype',
      h:'A floor sensor read 225 times a second &mdash; every reading has to be right.',
